@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "tarsk-work-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-05-24",
+  "compatibility_flags": ["nodejs_compat"],
+  // Secrets are set via `wrangler secret put` in production.
+  // For local dev, create a .dev.vars file (see .dev.vars.example).
+  "vars": {},
+  "routes": [
+    { "pattern": "work.tarsk.io", "custom_domain": true }
+  ]
+}

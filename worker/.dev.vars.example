@@ -1,0 +1,3 @@
+# .dev.vars — local development secrets (do NOT commit real values)
+TURSO_DATABASE_URL=file:./local.db
+TURSO_AUTH_TOKEN=

@@ -1,0 +1,19 @@
+{
+  "name": "img-cli",
+  "version": "0.1.0",
+  "description": "Node CLI that generates images from text prompts via stable-diffusion.cpp (FLUX.2-klein, Z-Image-Turbo, ...)",
+  "type": "module",
+  "bin": {
+    "img": "./src/cli.js"
+  },
+  "files": [
+    "src/"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node src/cli.js"
+  },
+  "license": "MIT"
+}
