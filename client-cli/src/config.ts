@@ -28,7 +28,7 @@ export function getServerUrl(
   config: ClientConfig,
   overrides: { server?: string },
 ): string {
-  return overrides.server ?? config.serverUrl ?? 'https://work.tarsk.io';
+  return overrides.server ?? config.serverUrl ?? 'https://workar.tarsk.io';
 }
 
 export function buildAuthHeaders(

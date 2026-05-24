@@ -77,7 +77,7 @@ echo "    API key acquired."
 # ---------------------------------------------------------------------------
 echo "==> Starting tarsk-server..."
 cd "$ROOT_DIR/server-cli"
-TARSK_SERVER_URL="$SERVER_URL" TARSK_API_KEY="$API_KEY" \
+WORKAR_SERVER_URL="$SERVER_URL" WORKAR_API_KEY="$API_KEY" \
   node dist/cli.js > /tmp/server-cli-e2e.log 2>&1 &
 SERVER_PID=$!
 sleep 1

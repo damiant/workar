@@ -40,7 +40,7 @@ workar register --username <name> [--server <url>]
 | Option | Description |
 |--------|-------------|
 | `--username` | **(required)** Username to register |
-| `--server` | Server URL (default: `https://work.tarsk.io`) |
+| `--server` | Server URL (default: `https://workar.tarsk.io`) |
 
 ### `workar auth`
 
@@ -121,15 +121,15 @@ workar-server [--api-key <key>] [--server <url>] [--defs <path>] [--timeout-ms <
 
 | Option | Env var | Description | Default |
 |--------|---------|-------------|---------|
-| `--api-key` | `TARSK_API_KEY` | **(required)** API key for the worker account | — |
-| `--server` | `TARSK_SERVER_URL` | Server URL | `https://work.tarsk.io` |
+| `--api-key` | `WORKAR_API_KEY` | **(required)** API key for the worker account | — |
+| `--server` | `WORKAR_SERVER_URL` | Server URL | `https://workar.tarsk.io` |
 | `--defs` | `TARSK_WORK_DEFS` | Path to `work-defs.json` | `./work-defs.json` |
 | `--timeout-ms` | — | Max milliseconds per job before it is killed | `600000` (10 min) |
 
 **Example:**
 
 ```sh
-TARSK_API_KEY=mykey workar-server --defs ./work-defs.json
+WORKAR_API_KEY=mykey workar-server --defs ./work-defs.json
 # or
 workar-server --api-key mykey --defs ./server-cli/work-defs.json --timeout-ms 120000
 ```

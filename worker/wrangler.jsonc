@@ -8,6 +8,6 @@
   // For local dev, create a .dev.vars file (see .dev.vars.example).
   "vars": {},
   "routes": [
-    { "pattern": "work.tarsk.io", "custom_domain": true }
+    { "pattern": "workar.tarsk.io", "custom_domain": true }
   ]
 }

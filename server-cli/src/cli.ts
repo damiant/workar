@@ -19,7 +19,7 @@ const { values } = parseArgs({
 const config = getConfig(values as Record<string, string | undefined>);
 
 if (!config.apiKey) {
-  console.error('Error: --api-key or TARSK_API_KEY is required');
+  console.error('Error: --api-key or WORKAR_API_KEY is required');
   process.exit(1);
 }
 

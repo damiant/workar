@@ -14,8 +14,8 @@ npm run build
 
 ```
 workar-server \
-  --server <url>    (default: $TARSK_SERVER_URL or http://localhost:8787)
-  --api-key <key>   (required; or set TARSK_API_KEY)
+  --server <url>    (default: $WORKAR_SERVER_URL or http://localhost:8787)
+  --api-key <key>   (required; or set WORKAR_API_KEY)
   --defs <path>     (default: $TARSK_WORK_DEFS or ./work-defs.json)
   --timeout-ms <n>  (default: 600000)
 ```
