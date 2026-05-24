@@ -1,4 +1,4 @@
-# tarsk
+# workar
 
 End-user CLI for the distributed work system.
 
@@ -14,23 +14,23 @@ npm run build
 ### Register a user
 
 ```bash
-tarsk register --username alice [--server http://localhost:8787]
+workar register --username alice [--server http://localhost:8787]
 ```
 
-Writes `~/.tarsk-work/config.json` with `username`, `apiKey`, and `serverUrl`.
+Writes `~/.workar/config.json` with `username`, `apiKey`, and `serverUrl`.
 
 ### Authenticate (get a JWT)
 
 ```bash
-tarsk auth [--username alice] [--api-key <key>]
+workar auth [--username alice] [--api-key <key>]
 ```
 
-Writes the JWT to `~/.tarsk-work/config.json`.
+Writes the JWT to `~/.workar/config.json`.
 
 ### Submit work
 
 ```bash
-tarsk submit --type image-gen --wait [--out-dir ./output] -- prompt="a red panda" model=sdxl-lightning
+workar submit --type image-gen --wait [--out-dir ./output] -- prompt="a red panda" model=sdxl-lightning
 ```
 
 Key-value pairs after `--` are passed as work fields. `--wait` polls for the
@@ -39,12 +39,12 @@ result and saves it as `work-<workId>.<ext>` in `--out-dir` (default: CWD).
 ### Retrieve a result
 
 ```bash
-tarsk get [--work-id <id>] [--wait] [--out-dir ./output]
+workar get [--work-id <id>] [--wait] [--out-dir ./output]
 ```
 
 ## Config file
 
-`~/.tarsk-work/config.json` (chmod 600):
+`~/.workar/config.json` (chmod 600):
 
 ```json
 {

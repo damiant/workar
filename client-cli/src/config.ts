@@ -10,7 +10,7 @@ export interface ClientConfig {
   jwt?: string;
 }
 
-const CONFIG_DIR = path.join(homedir(), '.tarsk-work');
+const CONFIG_DIR = path.join(homedir(), '.workar');
 const CONFIG_FILE = path.join(CONFIG_DIR, 'config.json');
 
 export async function readConfig(): Promise<ClientConfig> {
@@ -38,5 +38,5 @@ export function buildAuthHeaders(
   const apiKey = overrides['api-key'] ?? config.apiKey;
   if (apiKey) return { 'x-api-key': apiKey };
   if (config.jwt) return { authorization: `Bearer ${config.jwt}` };
-  throw new Error('No authentication available. Run `tarsk register` then `tarsk auth`.');
+  throw new Error('No authentication available. Run `workar register` then `workar auth`.');
 }

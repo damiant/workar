@@ -1,4 +1,4 @@
-# tarsk-server
+# workar-server
 
 Server-side runner CLI for the distributed work system. Long-polls the API for
 work items, executes the configured command, and posts results back.
@@ -13,7 +13,7 @@ npm run build
 ## Usage
 
 ```
-tarsk-server \
+workar-server \
   --server <url>    (default: $TARSK_SERVER_URL or http://localhost:8787)
   --api-key <key>   (required; or set TARSK_API_KEY)
   --defs <path>     (default: $TARSK_WORK_DEFS or ./work-defs.json)

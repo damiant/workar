@@ -1,10 +1,10 @@
 {
-  "name": "tarsk-client-cli",
+  "name": "workar-client-cli",
   "version": "0.1.0",
   "private": true,
   "type": "module",
   "bin": {
-    "tarsk": "./dist/cli.js"
+    "workar": "./dist/cli.js"
   },
   "scripts": {
     "build": "tsc",

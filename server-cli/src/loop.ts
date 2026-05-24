@@ -10,7 +10,7 @@ export async function runLoop(
   runner: Runner,
   timeoutMs: number,
 ): Promise<never> {
-  console.log('tarsk-server: starting work loop');
+  console.log('workar-server: starting work loop');
   // eslint-disable-next-line no-constant-condition
   while (true) {
     let work: Record<string, unknown>;

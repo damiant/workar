@@ -12,11 +12,11 @@ export async function cmdAuth(args: {
   const apiKey = args['api-key'] ?? config.apiKey;
 
   if (!username) {
-    console.error('Error: --username is required (or run `tarsk register` first)');
+    console.error('Error: --username is required (or run `workar register` first)');
     process.exit(1);
   }
   if (!apiKey) {
-    console.error('Error: --api-key is required (or run `tarsk register` first)');
+    console.error('Error: --api-key is required (or run `workar register` first)');
     process.exit(1);
   }
 
