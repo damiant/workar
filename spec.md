@@ -45,7 +45,7 @@ Separate top-level folders, no npm workspaces. Each has its own
 │   └── package.json
 ├── server-cli/               # worker-side runner CLI
 │   ├── src/
-│   │   ├── cli.ts            # entry: `tarsk-server`
+│   │   ├── cli.ts            # entry: `workar-server`
 │   │   ├── loop.ts           # long-poll deque → run → complete
 │   │   ├── runner.ts         # work-defs lookup + execFile
 │   │   ├── api.ts            # HTTP client
@@ -54,14 +54,14 @@ Separate top-level folders, no npm workspaces. Each has its own
 │   └── package.json
 ├── client-cli/               # end-user CLI
 │   ├── src/
-│   │   ├── cli.ts            # entry: `tarsk` with subcommands
+│   │   ├── cli.ts            # entry: `workar` with subcommands
 │   │   ├── commands/
 │   │   │   ├── register.ts
 │   │   │   ├── auth.ts
 │   │   │   ├── submit.ts
 │   │   │   └── get.ts
 │   │   ├── api.ts
-│   │   └── config.ts         # ~/.tarsk-work/config.json
+│   │   └── config.ts         # ~/.workar/config.json
 │   └── package.json
 └── scripts/
     └── e2e.sh                # spins wrangler dev + walks the flow
@@ -79,7 +79,7 @@ Package manager: `npm`. Each folder is independently installable.
 ## 2. Configuration & Secrets
 
 ### 2.1 Worker (`wrangler.jsonc`)
-- `name`: `tarsk-work-api`
+- `name`: `workar-api`
 - `main`: `src/index.ts`
 - `compatibility_date`: current
 - Vars/secrets:
@@ -90,12 +90,12 @@ Package manager: `npm`. Each folder is independently installable.
 
 ### 2.2 Server CLI
 Environment variables (override CLI flags):
-- `TARSK_SERVER_URL` (default `http://localhost:8787`)
-- `TARSK_API_KEY` (required)
-- `TARSK_WORK_DEFS` (path to `work-defs.json`, default `./work-defs.json`)
+- `WORKAR_SERVER_URL` (default `http://localhost:8787`)
+- `WORKAR_API_KEY` (required)
+- `WORKAR_WORK_DEFS` (path to `work-defs.json`, default `./work-defs.json`)
 
 ### 2.3 Client CLI
-- Config file: `~/.tarsk-work/config.json`
+- Config file: `~/.workar/config.json`
   ```json
   {
     "serverUrl": "https://...",
@@ -266,11 +266,11 @@ required; small switch is fine. Return JSON helper + error helper.
 
 ## 5. Server CLI (`server-cli`)
 
-Binary: `tarsk-server`. Sequential, one job at a time.
+Binary: `workar-server`. Sequential, one job at a time.
 
 ### 5.1 Args
 ```
-tarsk-server \
+workar-server \
   --server <url> \
   --api-key <key> \
   --defs ./work-defs.json
@@ -336,19 +336,19 @@ injection from user-supplied prompts.
 
 ## 6. Client CLI (`client-cli`)
 
-Binary: `tarsk`. Subcommands via a tiny arg parser (no heavy deps; use
+Binary: `workar`. Subcommands via a tiny arg parser (no heavy deps; use
 `node:util` `parseArgs`).
 
 ### 6.1 Subcommands
 
 ```
-tarsk register --username <name> [--server <url>]
+workar register --username <name> [--server <url>]
    → POST /api/users; writes username+apiKey+server to config.
 
-tarsk auth [--username <name>] [--api-key <key>]
+workar auth [--username <name>] [--api-key <key>]
    → POST /api/auth; writes jwt to config.
 
-tarsk submit --type <t> [--wait] [--out-dir <dir>] [-- <key=value>...]
+workar submit --type <t> [--wait] [--out-dir <dir>] [-- <key=value>...]
    → POST /api/work with { type, ...kv }; prints workId.
      If --wait, then immediately polls GET /api/work?poll&workId=<id>
      and on success saves to <out-dir>/work-<id>.<ext> where ext is
@@ -358,13 +358,13 @@ tarsk submit --type <t> [--wait] [--out-dir <dir>] [-- <key=value>...]
      If the response is an error JSON, prints the message to stderr and
      exits non-zero (still saves the JSON file for inspection).
 
-tarsk get [--work-id <id>] [--wait] [--out-dir <dir>]
+workar get [--work-id <id>] [--wait] [--out-dir <dir>]
    → GET /api/work (optionally for a specific id); save as above.
 ```
 
 Example matching idea.md:
 ```
-tarsk submit --type image-gen --wait \
+workar submit --type image-gen --wait \
   -- prompt="a red panda surfing" model=sdxl-lightning
 ```
 
@@ -414,9 +414,9 @@ it up from a documented location.)
 ### 7.2 E2E (`scripts/e2e.sh`)
 Bash script (no extra deps):
 1. `wrangler dev` in background pointing at a local libsql file.
-2. `tarsk register` → capture apiKey.
-3. `tarsk-server` in background.
-4. `tarsk submit --type image-gen --wait -- prompt="hello" model=...`.
+2. `workar register` → capture apiKey.
+3. `workar-server` in background.
+4. `workar submit --type image-gen --wait -- prompt="hello" model=...`.
 5. Assert a `work-*.png` file is created and non-empty.
 6. Tear down both background processes.
 
@@ -426,8 +426,8 @@ Bash script (no extra deps):
 
 - `npm install && npm test` passes in `worker/`.
 - `wrangler dev` boots; all endpoints in §4 respond per contract.
-- `tarsk register` + `tarsk submit --wait` against `wrangler dev` with a
-  running `tarsk-server` produces a PNG file on disk with the documented
+- `workar register` + `workar submit --wait` against `wrangler dev` with a
+  running `workar-server` produces a PNG file on disk with the documented
   log line.
 - Adding a new work type requires **only** a new entry in
   `work-defs.json` — no code changes in worker, server-cli, or client.
