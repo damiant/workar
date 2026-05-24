@@ -1,9 +1,9 @@
 {
-  "name": "workar-server-cli",
+  "name": "workar-serve",
   "version": "0.1.0",
   "type": "module",
   "bin": {
-    "workar-server": "./dist/cli.js"
+    "workar-serve": "./dist/cli.js"
   },
   "scripts": {
     "build": "tsc",

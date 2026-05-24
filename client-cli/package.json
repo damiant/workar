@@ -1,5 +1,5 @@
 {
-  "name": "workar-client-cli",
+  "name": "workar",
   "version": "0.1.0",
   "type": "module",
   "bin": {
