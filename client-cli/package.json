@@ -1,7 +1,6 @@
 {
   "name": "workar-client-cli",
   "version": "0.1.0",
-  "private": true,
   "type": "module",
   "bin": {
     "workar": "./dist/cli.js"
