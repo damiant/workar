@@ -95,6 +95,7 @@ async function main() {
     '-p', args.prompt,
     '-sys', args.system,
     '--no-warmup',
+    '--single-turn',
   );
   if (args.temp)       llamaArgs.push('--temp', args.temp);
   if (args['top-k'])   llamaArgs.push('--top-k', args['top-k']);
@@ -105,36 +106,12 @@ async function main() {
 
   process.stderr.write(`\nModel: ${preset.label} (${args.model})\n`);
   process.stderr.write(`Running: ${path.basename(binary)} ${llamaArgs.map(a => /\s/.test(a) ? JSON.stringify(a) : a).join(' ')}\n\n`);
-  await runLlama(binary, llamaArgs);
+  const output = await runLlama(binary, llamaArgs);
 
   if (args.output) {
-    // llama-cli prints to stdout when using -p, but with stdio: 'inherit'
-    // the output goes directly to the terminal. For --output, capture to file.
-    // NOTE: The output was already streamed to the terminal via stdio: 'inherit'.
-    // If --output is specified, we re-run with stdio capture to save the output.
-    process.stderr.write(`\nNote: --output requires re-running with stdout capture.\n`);
-
-    // Re-run with captured stdout for file output
-    const { execFile } = await import('node:child_process');
-    const { promisify } = await import('node:util');
-    const execFileAsync = promisify(execFile);
-
-    // Set library path so shared libs next to the binary are found
-    const libEnv = { ...process.env };
-    const binDir = path.dirname(binary);
-    if (process.platform === 'darwin') {
-      libEnv.DYLD_LIBRARY_PATH = binDir + (libEnv.DYLD_LIBRARY_PATH ? `:${libEnv.DYLD_LIBRARY_PATH}` : '');
-    } else if (process.platform === 'linux') {
-      libEnv.LD_LIBRARY_PATH = binDir + (libEnv.LD_LIBRARY_PATH ? `:${libEnv.LD_LIBRARY_PATH}` : '');
-    }
-
-    const { stdout } = await execFileAsync(binary, llamaArgs, {
-      maxBuffer: 100 * 1024 * 1024,
-      env: libEnv,
-    });
-    const output = path.resolve(args.output);
-    fs.writeFileSync(output, stdout);
-    process.stderr.write(`\n✓ Saved ${output}\n`);
+    const outPath = path.resolve(args.output);
+    fs.writeFileSync(outPath, output);
+    process.stderr.write(`\n✓ Saved ${outPath}\n`);
   }
 }
 
