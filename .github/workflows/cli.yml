@@ -6,6 +6,9 @@ on:
     paths:
       - 'client-cli/**'
       - 'server-cli/**'
+      - 'image-gen-cli/**'
+      - 'tts-cli/**'
+      - 'gemma4-cli/**'
       - '.github/workflows/cli.yml'
     tags:
       - 'v*'
@@ -13,6 +16,9 @@ on:
     paths:
       - 'client-cli/**'
       - 'server-cli/**'
+      - 'image-gen-cli/**'
+      - 'tts-cli/**'
+      - 'gemma4-cli/**'
       - '.github/workflows/cli.yml'
 
 jobs:
