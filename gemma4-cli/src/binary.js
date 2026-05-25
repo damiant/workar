@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
+import { execSync } from 'node:child_process';
 import { BIN_DIR, ensureDirs } from './paths.js';
 import { download } from './download.js';
 import { unzip } from './unzip.js';
@@ -59,7 +60,10 @@ export async function resolveBinary() {
 
   ensureDirs();
   const installed = findBinary(BIN_DIR);
-  if (installed) return installed;
+  if (installed) {
+    fixDylibs(installed);
+    return installed;
+  }
 
   process.stderr.write('Downloading llama-cli binary...\n');
   const { url, name } = await fetchLatestAsset();
@@ -76,6 +80,55 @@ export async function resolveBinary() {
   const bin = findBinary(BIN_DIR);
   if (!bin) throw new Error('llama-cli binary not found in extracted archive');
   if (process.platform !== 'win32') fs.chmodSync(bin, 0o755);
+  fixDylibs(bin);
   process.stderr.write('✓ Downloaded llama-cli binary.\n');
   return bin;
+}
+
+/**
+ * Fix macOS dynamic library loading for prebuilt llama.cpp binaries.
+ *
+ * llama.cpp releases ship versioned dylibs (e.g. libmtmd.0.0.9311.dylib) but
+ * the binaries reference them via @rpath/libmtmd.0.dylib. We need to:
+ *   1. Create symlinks for the major-version names
+ *   2. Add @executable_path as an rpath so the linker finds the sibling dylibs
+ *
+ * On macOS with SIP, DYLD_LIBRARY_PATH is stripped from child processes of
+ * SIP-protected apps (Terminal, VS Code, etc.), so we cannot rely on env vars.
+ */
+function fixDylibs(binaryPath) {
+  if (process.platform !== 'darwin') return;
+  const binDir = path.dirname(binaryPath);
+
+  // Create versioned symlinks: libFoo.0.dylib → libFoo.0.0.9311.dylib
+  const dylibs = fs.readdirSync(binDir).filter(f => f.endsWith('.dylib'));
+  for (const dylib of dylibs) {
+    // Match pattern like libFoo.0.12.0.dylib or libFoo.0.0.9311.dylib
+    const match = dylib.match(/^(lib.+\.0)\.\d+\.\d+\.dylib$/);
+    if (match) {
+      const linkName = match[1] + '.dylib';
+      const linkPath = path.join(binDir, linkName);
+      if (!fs.existsSync(linkPath)) {
+        fs.symlinkSync(dylib, linkPath);
+      }
+    }
+    // Also handle unversioned: libFoo.dylib → libFoo.0.0.X.dylib if no .0 version
+    const unversionedMatch = dylib.match(/^(lib.+)\.\d+\.\d+\.\d+\.dylib$/);
+    if (unversionedMatch) {
+      const baseName = unversionedMatch[1] + '.dylib';
+      const basePath = path.join(binDir, baseName);
+      if (!fs.existsSync(basePath)) {
+        fs.symlinkSync(dylib, basePath);
+      }
+    }
+  }
+
+  // Add @executable_path as rpath so the binary finds sibling dylibs
+  try {
+    execSync(`install_name_tool -add_rpath @executable_path "${binaryPath}"`, {
+      stdio: 'pipe',
+    });
+  } catch {
+    // May already have the rpath; that's fine
+  }
 }
