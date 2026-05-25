@@ -42,8 +42,8 @@ const config = getConfig(values as Record<string, string | undefined>, saved);
 // Prefer JWT from saved config, fall back to api-key
 const useJwt = !config.apiKey && !!config.jwt;
 if (!config.apiKey && !config.jwt) {
-  console.error('Error: authentication required. Run `workar-server auth` or provide --api-key / WORKAR_API_KEY');
-  process.exit(1);
+  await cmdAuth({});
+  process.exit(0);
 }
 
 const workDefsRaw = await readFile(config.workDefsPath, 'utf-8');
