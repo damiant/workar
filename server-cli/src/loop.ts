@@ -19,6 +19,11 @@ export async function runLoop(
       if (!result.ok || !result.work) continue;
       work = result.work;
     } catch (err) {
+      const cause = (err as { cause?: { code?: string } })?.cause;
+      if (cause?.code === 'UND_ERR_HEADERS_TIMEOUT') {
+        // Long-polling timeout is normal, retry immediately
+        continue;
+      }
       console.error('deque error:', err);
       await sleep(2_000);
       continue;
