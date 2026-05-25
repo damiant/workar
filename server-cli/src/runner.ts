@@ -9,7 +9,7 @@
 
 import { execFile as execFileCb } from 'node:child_process';
 import { promisify } from 'node:util';
-import { readFile } from 'node:fs/promises';
+import { readFile, unlink } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 
 const execFile = promisify(execFileCb);
@@ -101,6 +101,7 @@ export class Runner {
         throw new Error(`Output file not found: ${outputPath}`);
       }
       const bytes = await readFile(outputPath);
+      await unlink(outputPath);
       return { contentType: def.contentType, bytes };
     }
 
