@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 import { parseArgs } from 'node:util';
-import { cmdRegister } from './commands/register.js';
 import { cmdAuth } from './commands/auth.js';
 import { cmdSubmit } from './commands/submit.js';
 import { cmdGet } from './commands/get.js';
@@ -8,18 +7,6 @@ import { cmdGet } from './commands/get.js';
 const [subcommand, ...restArgs] = process.argv.slice(2);
 
 switch (subcommand) {
-  case 'register': {
-    const { values } = parseArgs({
-      args: restArgs,
-      options: {
-        username: { type: 'string' },
-        server: { type: 'string' },
-      },
-    });
-    await cmdRegister(values as { username?: string; server?: string });
-    break;
-  }
-
   case 'auth': {
     const { values } = parseArgs({
       args: restArgs,
@@ -82,7 +69,7 @@ switch (subcommand) {
 
   default: {
     console.error(`Unknown subcommand: ${subcommand ?? '(none)'}`);
-    console.error('Usage: tarsk <register|auth|submit|get> [options]');
+    console.error('Usage: workar <auth|submit|get> [options]');
     process.exit(1);
   }
 }

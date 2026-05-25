@@ -5,27 +5,24 @@ End-user CLI for the distributed work system.
 ## Setup
 
 ```bash
-npm install
-npm run build
+npm install -g workar
 ```
 
 ## Usage
 
-### Register a user
+### Authenticate
+
+Authentication uses email OTP — no password or API key needed. Your email address is your username.
 
 ```bash
-workar register --username alice [--server http://localhost:8787]
+workar auth [--email you@example.com] [--server http://localhost:8787]
 ```
 
-Writes `~/.workar/config.json` with `username`, `apiKey`, and `serverUrl`.
+1. Enter your email address (or pass `--email`).
+2. A 6-digit code is sent to that address.
+3. Enter the code — a JWT is saved to `~/.workar/config.json`.
 
-### Authenticate (get a JWT)
-
-```bash
-workar auth [--username alice] [--api-key <key>]
-```
-
-Writes the JWT to `~/.workar/config.json`.
+The JWT is used automatically for all subsequent commands.
 
 ### Submit work
 
@@ -49,10 +46,9 @@ workar get [--work-id <id>] [--wait] [--out-dir ./output]
 ```json
 {
   "serverUrl": "https://...",
-  "username": "alice",
-  "apiKey": "...",
+  "username": "you@example.com",
   "jwt": "..."
 }
 ```
 
-Flags `--server`, `--username`, `--api-key` override the file values.
+The `--server` flag overrides `serverUrl` for a single command.

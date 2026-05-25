@@ -6,18 +6,31 @@ work items, executes the configured command, and posts results back.
 ## Setup
 
 ```bash
-npm install
-npm run build
+npm install -g workar-server
 ```
 
-## Usage
+## Authentication
 
+Authentication uses email OTP. Run once before starting the work loop:
+
+```bash
+workar-server auth [--email you@example.com] [--server <url>]
 ```
+
+1. Enter your email address (or pass `--email`).
+2. A 6-digit code is sent to that address.
+3. Enter the code — a JWT is saved to `~/.workar-server/config.json`.
+
+Alternatively, pass `--api-key` or set `WORKAR_API_KEY` to use an API key directly.
+
+## Running the work loop
+
+```bash
 workar-server \
-  --server <url>    (default: $WORKAR_SERVER_URL or http://localhost:8787)
-  --api-key <key>   (required; or set WORKAR_API_KEY)
-  --defs <path>     (default: $TARSK_WORK_DEFS or ./work-defs.json)
-  --timeout-ms <n>  (default: 600000)
+  [--server <url>]    (default: $WORKAR_SERVER_URL or https://workar.tarsk.io)
+  [--api-key <key>]   (or set WORKAR_API_KEY; falls back to saved JWT from auth)
+  [--defs <path>]     (default: $TARSK_WORK_DEFS or ./work-defs.json)
+  [--timeout-ms <n>]  (default: 600000)
 ```
 
 ## work-defs.json
