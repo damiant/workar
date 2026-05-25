@@ -24,12 +24,11 @@ switch (subcommand) {
     const { values } = parseArgs({
       args: restArgs,
       options: {
-        username: { type: 'string' },
-        'api-key': { type: 'string' },
+        email: { type: 'string' },
         server: { type: 'string' },
       },
     });
-    await cmdAuth(values as { username?: string; 'api-key'?: string; server?: string });
+    await cmdAuth(values as { email?: string; server?: string });
     break;
   }
 

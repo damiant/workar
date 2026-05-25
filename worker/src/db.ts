@@ -163,3 +163,60 @@ export async function deleteOutQueueItem(db: Client, workId: string): Promise<vo
 }
 
 // TODO: Add periodic GC to purge out_queue rows older than a configurable TTL.
+
+// ---------------------------------------------------------------------------
+// Email OTP verifications
+// ---------------------------------------------------------------------------
+
+/** Insert a new OTP code for the given email, then purge codes older than 15 minutes. */
+export async function insertVerification(db: Client, email: string, code: string): Promise<void> {
+  const now = Date.now();
+  await db.execute({
+    sql: 'INSERT INTO verifications (code, email, created_at) VALUES (?, ?, ?)',
+    args: [code, email, now],
+  });
+  // Cleanup expired codes (older than 15 minutes)
+  const expiry = now - 15 * 60 * 1000;
+  await db.execute({
+    sql: 'DELETE FROM verifications WHERE created_at < ?',
+    args: [expiry],
+  });
+}
+
+/** Find a verification row by code. Returns null if not found or expired. */
+export async function findVerification(db: Client, code: string) {
+  const expiry = Date.now() - 15 * 60 * 1000;
+  const result = await db.execute({
+    sql: 'SELECT email, created_at FROM verifications WHERE code = ? AND created_at >= ?',
+    args: [code, expiry],
+  });
+  return result.rows[0] ?? null;
+}
+
+/** Delete a verification code after it has been consumed. */
+export async function deleteVerification(db: Client, code: string): Promise<void> {
+  await db.execute({
+    sql: 'DELETE FROM verifications WHERE code = ?',
+    args: [code],
+  });
+}
+
+/** Upsert user by email (email is used as username). Creates user if not exists. */
+export async function upsertUserByEmail(db: Client, email: string): Promise<void> {
+  const existing = await db.execute({
+    sql: 'SELECT username FROM users WHERE username = ?',
+    args: [email],
+  });
+  if (!existing.rows[0]) {
+    // Generate a random unused api_key to satisfy NOT NULL constraint
+    const randomBytes = new Uint8Array(24);
+    crypto.getRandomValues(randomBytes);
+    let binary = '';
+    for (let i = 0; i < randomBytes.length; i++) binary += String.fromCharCode(randomBytes[i]);
+    const apiKey = btoa(binary);
+    await db.execute({
+      sql: 'INSERT INTO users (username, api_key, created_at) VALUES (?, ?, ?)',
+      args: [email, apiKey, Date.now()],
+    });
+  }
+}

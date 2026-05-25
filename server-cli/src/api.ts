@@ -8,9 +8,33 @@ export class ServerApi {
 
   constructor(
     private readonly serverUrl: string,
-    apiKey: string,
+    apiKeyOrJwt: string,
+    isJwt = false,
   ) {
-    this.authHeader = { 'x-api-key': apiKey };
+    this.authHeader = isJwt
+      ? { authorization: `Bearer ${apiKeyOrJwt}` }
+      : { 'x-api-key': apiKeyOrJwt };
+  }
+
+  async requestEmailAuth(email: string): Promise<void> {
+    const res = await fetch(`${this.serverUrl}/api/auth/request`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    const data = (await res.json()) as Record<string, unknown>;
+    if (!res.ok) throw new Error((data['error'] as string) ?? `HTTP ${res.status}`);
+  }
+
+  async verifyEmailCode(code: string): Promise<{ jwt: string }> {
+    const res = await fetch(`${this.serverUrl}/api/auth/verify`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ code }),
+    });
+    const data = (await res.json()) as Record<string, unknown>;
+    if (!res.ok) throw new Error((data['error'] as string) ?? `HTTP ${res.status}`);
+    return data as { jwt: string };
   }
 
   async deque(poll = false): Promise<DequeResult> {

@@ -18,6 +18,8 @@ const DB_URL = `file:${DB_FILE}`;
 const testEnv: Env = {
   TURSO_DATABASE_URL: DB_URL,
   TURSO_AUTH_TOKEN: '',
+  ZEPTOMAIL_TOKEN: '',
+  FROM_EMAIL: 'test@example.com',
 };
 
 // Mock the Workers-only `scheduler` global so tests run in Node.js.

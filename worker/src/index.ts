@@ -2,6 +2,7 @@ import { getDb } from './db.js';
 import { resolveUsername } from './auth-mw.js';
 import { handleCreateUser } from './routes/users.js';
 import { handleAuth } from './routes/auth.js';
+import { handleAuthRequest, handleAuthVerify } from './routes/auth-email.js';
 import { handleSubmitWork, handleGetWork } from './routes/work.js';
 import { handleDeque } from './routes/deque.js';
 import { handleComplete } from './routes/complete.js';
@@ -22,6 +23,12 @@ export default {
     }
     if (method === 'POST' && pathname === '/api/auth') {
       return handleAuth(request, db);
+    }
+    if (method === 'POST' && pathname === '/api/auth/request') {
+      return handleAuthRequest(request, db, env);
+    }
+    if (method === 'POST' && pathname === '/api/auth/verify') {
+      return handleAuthVerify(request, db, env);
     }
 
     // Protected endpoints — resolve caller identity

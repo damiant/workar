@@ -1,6 +1,6 @@
 import { createInterface } from 'node:readline';
-import { readConfig, writeConfig, getServerUrl } from '../config.js';
-import { ClientApi } from '../api.js';
+import { readSavedConfig, writeSavedConfig } from '../config.js';
+import { ServerApi } from '../api.js';
 
 function prompt(question: string): Promise<string> {
   const rl = createInterface({ input: process.stdin, output: process.stdout });
@@ -13,8 +13,8 @@ function prompt(question: string): Promise<string> {
 }
 
 export async function cmdAuth(args: { email?: string; server?: string }): Promise<void> {
-  const config = await readConfig();
-  const serverUrl = getServerUrl(config, args);
+  const saved = await readSavedConfig();
+  const serverUrl = args.server ?? process.env['WORKAR_SERVER_URL'] ?? 'https://workar.tarsk.io';
 
   const email = args.email ?? (await prompt('Email address: '));
   if (!email) {
@@ -22,7 +22,7 @@ export async function cmdAuth(args: { email?: string; server?: string }): Promis
     process.exit(1);
   }
 
-  const api = new ClientApi(serverUrl, {});
+  const api = new ServerApi(serverUrl, '', false);
 
   console.log(`Sending login code to ${email}...`);
   await api.requestEmailAuth(email);
@@ -35,7 +35,6 @@ export async function cmdAuth(args: { email?: string; server?: string }): Promis
   }
 
   const result = await api.verifyEmailCode(code);
-  await writeConfig({ ...config, jwt: result.jwt, username: email });
+  await writeSavedConfig({ ...saved, jwt: result.jwt, email });
   console.log('Authenticated successfully');
 }
-

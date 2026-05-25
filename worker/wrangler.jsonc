@@ -5,6 +5,8 @@
   "compatibility_date": "2025-05-24",
   "compatibility_flags": ["nodejs_compat"],
   // Secrets are set via `wrangler secret put` in production.
+  // Required secrets: TURSO_DATABASE_URL, TURSO_AUTH_TOKEN, ZEPTOMAIL_TOKEN
+  // Optional: FROM_EMAIL (defaults to noreply@tarsk.io)
   // For local dev, create a .dev.vars file (see .dev.vars.example).
   "vars": {},
   "routes": [

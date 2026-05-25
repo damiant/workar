@@ -26,6 +26,27 @@ export class ClientApi {
     return data as { jwt: string };
   }
 
+  async requestEmailAuth(email: string): Promise<void> {
+    const res = await fetch(`${this.serverUrl}/api/auth/request`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    const data = (await res.json()) as Record<string, unknown>;
+    if (!res.ok) throw new Error((data['error'] as string) ?? `HTTP ${res.status}`);
+  }
+
+  async verifyEmailCode(code: string): Promise<{ jwt: string }> {
+    const res = await fetch(`${this.serverUrl}/api/auth/verify`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ code }),
+    });
+    const data = (await res.json()) as Record<string, unknown>;
+    if (!res.ok) throw new Error((data['error'] as string) ?? `HTTP ${res.status}`);
+    return data as { jwt: string };
+  }
+
   async submitWork(body: Record<string, unknown>): Promise<{ workId: string }> {
     const res = await fetch(`${this.serverUrl}/api/work`, {
       method: 'POST',
