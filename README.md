@@ -46,14 +46,13 @@ workar auth [--email <address>] [--server <url>]
 Submit a work job. Prints the assigned `workId`.
 
 ```sh
-workar submit --type <type> [key=value ...] [--wait] [--out-dir <dir>] [--server <url>] [--api-key <key>]
+workar submit --type <type> [key=value ...] [--out-dir <dir>] [--server <url>] [--api-key <key>]
 ```
 
 | Option | Description |
 |--------|-------------|
 | `--type` | **(required)** Work type (must match a type defined on the server, e.g. `image-gen`) |
 | `key=value` | Positional payload fields passed to the work handler (e.g. `prompt="a red fox"`) |
-| `--wait` | Block until the job completes and save the result |
 | `--out-dir` | Directory to save result files (default: current directory) |
 | `--server` | Server URL override |
 | `--api-key` | API key override (skips stored credentials) |
@@ -64,14 +63,14 @@ workar submit --type <type> [key=value ...] [--wait] [--out-dir <dir>] [--server
 # Submit image generation and get a workId back immediately
 workar submit --type image-gen prompt="a red fox" model=flux2-klein-4b
 
-# Submit image generation and wait for the PNG to be saved to ./output/
-workar submit --type image-gen prompt="a red fox" model=flux2-klein-4b --wait --out-dir ./output
+# Submit image generation and save the PNG to ./output/
+workar submit --type image-gen prompt="a red fox" model=flux2-klein-4b --out-dir ./output
 
-# Submit TTS and wait for the WAV to be saved
-workar submit --type tts text="Hello, world!" --wait --out-dir ./output
+# Submit TTS and save the WAV
+workar submit --type tts text="Hello, world!" --out-dir ./output
 
 # TTS with a specific voice and speed
-workar submit --type tts text="Good morning." voice=bf_emma speed=1.2 --wait
+workar submit --type tts text="Good morning." voice=bf_emma speed=1.2
 ```
 
 ### `workar get`
@@ -85,7 +84,6 @@ workar get [--work-id <id>] [--out-dir <dir>] [--server <url>] [--api-key <key>]
 | Option | Description |
 |--------|-------------|
 | `--work-id` | ID of the job to fetch |
-| `--wait` | Long-poll until the job completes (default: `true`) |
 | `--out-dir` | Directory to save result files (default: current directory) |
 | `--server` | Server URL override |
 | `--api-key` | API key override |
@@ -260,11 +258,11 @@ IMG_DIFFUSION_MODEL=/models/my-model.gguf img -p "a red fox"
 │  workar auth        │──────▶│   Worker)         │◀──────│  workar-server      │
 │  workar submit      │──────▶│  work queue       │──────▶│  runs img / tts /   │
 │                     │        │                   │        │  other commands     │
-│  workar get --wait  │◀──────│  result store     │◀──────│  commands           │
+│  workar get         │◀──────│  result store     │◀──────│  commands           │
 └─────────────────────┘        └──────────────────┘        └─────────────────────┘
 ```
 
 1. **Authenticate** once on the client machine (`workar auth` — prompted automatically on first use).
 2. Start `workar-server` on a machine with a GPU (or any machine for TTS).
-3. **Submit** work from anywhere — `workar submit --type image-gen prompt="..." --wait` or `workar submit --type tts text="..." --wait`.
+3. **Submit** work from anywhere — `workar submit --type image-gen prompt="..."` or `workar submit --type tts text="..."`.
 4. Results are saved to `--out-dir` automatically (`.png` for images, `.wav` for speech).
