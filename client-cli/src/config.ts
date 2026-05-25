@@ -38,5 +38,5 @@ export function buildAuthHeaders(
   const apiKey = overrides['api-key'] ?? config.apiKey;
   if (apiKey) return { 'x-api-key': apiKey };
   if (config.jwt) return { authorization: `Bearer ${config.jwt}` };
-  throw new Error('No authentication available. Run `workar register` then `workar auth`.');
+  throw new Error('Not authenticated. Run: workar auth');
 }

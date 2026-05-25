@@ -19,6 +19,10 @@ export async function cmdGet(args: {
   await mkdir(outDir, { recursive: true });
 
   const result = await api.getWork(args.wait ?? false, args['work-id']);
+  if (result === null) {
+    console.log('No work available.');
+    return;
+  }
   await saveResult(result, outDir);
   if (result.isError) process.exit(1);
 }

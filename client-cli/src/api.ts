@@ -66,7 +66,7 @@ export class ClientApi {
     contentType: string;
     bytes: Uint8Array;
     isError: boolean;
-  }> {
+  } | null> {
     const params = new URLSearchParams();
     if (workId) params.set('workId', workId);
     const qs = params.toString();
@@ -83,7 +83,7 @@ export class ClientApi {
 
       if (res.status === 404) {
         if (!poll || Date.now() - startTime >= maxWaitMs) {
-          throw new Error('No work result available (404)');
+          return null;
         }
         if (attempt === 1) process.stdout.write('Waiting for result');
         process.stdout.write('.');

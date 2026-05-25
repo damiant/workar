@@ -12,8 +12,27 @@ export async function cmdSubmit(args: {
   positionals?: string[];
 }): Promise<void> {
   if (!args.type) {
-    console.error('Error: --type is required');
-    process.exit(1);
+    console.log(`Usage: workar submit --type <work-type> [key=value ...] [options]
+
+Required:
+  --type <work-type>    Type of work to submit (e.g. image-gen)
+
+Positional key=value pairs (work parameters):
+  prompt=<text>         Prompt describing what to generate
+  model=<name>          Model to use (default: sdxl-lightning)
+  Any additional key=value pairs are passed to the work type.
+
+Options:
+  --wait                Wait for the result and save it locally
+  --out-dir <path>      Directory to save result (default: current directory)
+  --server <url>        Override the server URL
+
+Examples:
+  workar submit --type image-gen prompt="a red fox in the snow"
+  workar submit --type image-gen prompt="a red fox" model=sdxl-lightning --wait
+
+Not yet authenticated? Run: workar auth`);
+    process.exit(0);
   }
 
   const config = await readConfig();
