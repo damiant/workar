@@ -82,7 +82,14 @@ export class Runner {
     const def = this.defs.find((d) => d.type === work['type']);
     if (!def) throw new Error(`Unknown work type: ${work['type']}`);
 
-    const resolvedWork = { ...def.defaults, ...work };
+    const now = new Date();
+    const pad = (n: number, len = 2) => String(n).padStart(len, '0');
+    const timestamp =
+      `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}` +
+      `-${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}` +
+      `-${pad(Math.floor(Math.random() * 1000), 3)}`;
+
+    const resolvedWork = { ...def.defaults, ...work, timestamp };
 
     let lastStdout = '';
     for (const cmdStr of def.commands) {

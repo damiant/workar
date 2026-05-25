@@ -2,10 +2,10 @@
   {
     "type": "image-gen",
     "commands": [
-      "node __PKG_DIR__/image-gen-cli/cli.js -p @prompt -m @model -o @workId.png"
+      "node __PKG_DIR__/image-gen-cli/cli.js -p @prompt -m @model -o @timestamp.png"
     ],
     "contentType": "image/png",
-    "outputFile": "@workId.png",
+    "outputFile": "@timestamp.png",
     "defaults": {
       "model": "sdxl-lightning"
     }
