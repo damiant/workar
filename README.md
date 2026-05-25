@@ -252,14 +252,13 @@ IMG_DIFFUSION_MODEL=/models/my-model.gguf img -p "a red fox"
 ## End-to-end workflow
 
 ```
-┌─────────────────────┐        ┌──────────────────┐        ┌─────────────────────┐
-│  Client machine     │        │  tarsk API server │        │  Worker machine     │
-│                     │        │  (Cloudflare      │        │                     │
-│  workar auth        │──────▶│   Worker)         │◀──────│  workar-server      │
-│  workar submit      │──────▶│  work queue       │──────▶│  runs img / tts /   │
-│                     │        │                   │        │  other commands     │
-│  workar get         │◀──────│  result store     │◀──────│  commands           │
-└─────────────────────┘        └──────────────────┘        └─────────────────────┘
+┌──────────────────────┐          ┌──────────────────────┐          ┌──────────────────────┐
+│  Client machine      │          │  tarsk API           │          │  Worker machine      │
+│                      │          │  (Cloudflare Worker) │          │                      │
+│  workar auth         │─────────▶│                      │◀─────────│  workar-server       │
+│  workar submit       │─────────▶│  work queue          │─────────▶│  runs img / tts /    │
+│  workar get          │◀─────────│  result store        │◀─────────│  other commands      │
+└──────────────────────┘          └──────────────────────┘          └──────────────────────┘
 ```
 
 1. **Authenticate** once on the client machine (`workar auth` — prompted automatically on first use).
