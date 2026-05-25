@@ -112,7 +112,7 @@ jobs:
     name: Publish to npm
     runs-on: ubuntu-latest
     needs: [build-client, build-server]
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
     permissions:
       contents: read
       id-token: write   # required for npm Trusted Publishers (OIDC)
@@ -135,6 +135,18 @@ jobs:
         with:
           name: workar-server-dist
           path: server-cli/dist
+
+      - name: Version workar with build number
+        working-directory: client-cli
+        run: |
+          BASE=$(node -p "const v=require('./package.json').version.split('.'); v[0]+'.'+v[1]")
+          npm version "${BASE}.${{ github.run_number }}" --no-git-tag-version
+
+      - name: Version workar-server with build number
+        working-directory: server-cli
+        run: |
+          BASE=$(node -p "const v=require('./package.json').version.split('.'); v[0]+'.'+v[1]")
+          npm version "${BASE}.${{ github.run_number }}" --no-git-tag-version
 
       - name: Publish workar (Trusted Publisher / provenance)
         run: npm publish --provenance --access public
