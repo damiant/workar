@@ -11,5 +11,11 @@
   "vars": {},
   "routes": [
     { "pattern": "workar.tarsk.io", "custom_domain": true }
-  ]
+  ],
+  "observability": {
+    "logs": {
+      "enabled": true,
+      "invocation_logs": true
+    }
+  }
 }
