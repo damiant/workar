@@ -19,5 +19,5 @@ export function generateWorkId(): string {
   const bytes = new Uint8Array(16);
   crypto.getRandomValues(bytes);
   const randPart = Array.from(bytes, (b) => ULID_ENCODING[b % 32]);
-  return timePart.join('') + randPart.join('');
+  return (timePart.join('') + randPart.join('')).toLowerCase();
 }
