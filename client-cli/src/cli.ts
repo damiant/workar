@@ -77,18 +77,29 @@ switch (subcommand) {
   }
 
   case 'get': {
-    const { values } = parseArgs({
+    const { values, positionals: getPositionals } = parseArgs({
       args: restArgs,
       options: {
         'work-id': { type: 'string' },
-        wait: { type: 'boolean', default: false },
+        wait: { type: 'boolean', default: true },
         'out-dir': { type: 'string' },
         server: { type: 'string' },
         'api-key': { type: 'string' },
       },
+      allowPositionals: true,
     });
+    const getValues = values as {
+      'work-id'?: string;
+      wait?: boolean;
+      'out-dir'?: string;
+      server?: string;
+      'api-key'?: string;
+    };
+    if (!getValues['work-id'] && getPositionals[0]) {
+      getValues['work-id'] = getPositionals[0];
+    }
     await cmdGet(
-      values as {
+      getValues as {
         'work-id'?: string;
         wait?: boolean;
         'out-dir'?: string;
