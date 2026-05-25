@@ -29,7 +29,7 @@ async function sendOtpEmail(
   const body = {
     from: { address: fromEmail, name: 'Tarsk Work' },
     to: [{ email_address: { address: toEmail, name: 'User' } }],
-    subject: 'Your Tarsk Work login code',
+    subject: 'Workar Login Code',
     htmlbody: `<p>Your login code is: <strong style="font-size:1.5em;letter-spacing:0.1em">${code}</strong></p><p>This code expires in 15 minutes. Do not share it.</p>`,
   };
 
