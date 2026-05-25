@@ -11,6 +11,7 @@ import { execFile as execFileCb } from 'node:child_process';
 import { promisify } from 'node:util';
 import { readFile, unlink } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
+import path from 'node:path';
 
 const execFile = promisify(execFileCb);
 
@@ -102,6 +103,9 @@ export class Runner {
       }
       const bytes = await readFile(outputPath);
       await unlink(outputPath);
+      // Delete any work- prefixed intermediate file the sd binary may have left behind
+      const workFile = path.join(path.dirname(outputPath), 'work-' + path.basename(outputPath));
+      await unlink(workFile).catch(() => {});
       return { contentType: def.contentType, bytes };
     }
 
