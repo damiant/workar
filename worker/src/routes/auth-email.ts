@@ -44,7 +44,13 @@ async function sendOtpEmail(
 
   if (!res.ok) {
     const text = await res.text().catch(() => '');
-    throw new Error(`ZeptoMail error ${res.status}: ${text}`);
+    let detail = text;
+    try {
+      const json = JSON.parse(text) as Record<string, unknown>;
+      detail = JSON.stringify(json);
+    } catch { /* keep raw text */ }
+    console.error(`ZeptoMail ${res.status} from=${fromEmail} to=${toEmail}: ${detail}`);
+    throw new Error(`ZeptoMail error ${res.status}: ${detail}`);
   }
 }
 
