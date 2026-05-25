@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { parseArgs } from 'node:util';
 import path from 'node:path';
+import fs from 'node:fs/promises';
 import { env as hfEnv } from '@huggingface/transformers';
 import { ensureDirs, MODELS_DIR } from './paths.js';
 
@@ -8,7 +9,7 @@ import { ensureDirs, MODELS_DIR } from './paths.js';
 ensureDirs();
 hfEnv.cacheDir = MODELS_DIR;
 
-import { KokoroTTS } from 'kokoro-js';
+import { KokoroTTS, TextSplitterStream } from 'kokoro-js';
 
 const MODEL_ID = 'onnx-community/Kokoro-82M-v1.0-ONNX';
 
@@ -60,6 +61,45 @@ function parse() {
   return values;
 }
 
+/**
+ * Write a 32-bit float WAV file.
+ * @param {string} filePath  Output path
+ * @param {Float32Array} samples  Mono audio data
+ * @param {number} sampleRate  Sample rate in Hz
+ */
+async function writeWav(filePath, samples, sampleRate) {
+  const numChannels = 1;
+  const bitsPerSample = 32;
+  const byteRate = sampleRate * numChannels * (bitsPerSample / 8);
+  const blockAlign = numChannels * (bitsPerSample / 8);
+  const dataSize = samples.length * (bitsPerSample / 8);
+
+  const buffer = Buffer.alloc(44 + dataSize);
+  // RIFF header
+  buffer.write('RIFF', 0);
+  buffer.writeUInt32LE(36 + dataSize, 4);
+  buffer.write('WAVE', 8);
+  // fmt chunk
+  buffer.write('fmt ', 12);
+  buffer.writeUInt32LE(16, 16);           // chunk size
+  buffer.writeUInt16LE(3, 20);            // IEEE float format
+  buffer.writeUInt16LE(numChannels, 22);
+  buffer.writeUInt32LE(sampleRate, 24);
+  buffer.writeUInt32LE(byteRate, 28);
+  buffer.writeUInt16LE(blockAlign, 32);
+  buffer.writeUInt16LE(bitsPerSample, 34);
+  // data chunk
+  buffer.write('data', 36);
+  buffer.writeUInt32LE(dataSize, 40);
+
+  const view = new DataView(buffer.buffer, buffer.byteOffset, buffer.byteLength);
+  for (let i = 0; i < samples.length; i++) {
+    view.setFloat32(44 + i * 4, samples[i], true);
+  }
+
+  await fs.writeFile(filePath, buffer);
+}
+
 async function main() {
   const args = parse();
   if (args.help) { process.stdout.write(HELP); return; }
@@ -87,9 +127,35 @@ async function main() {
   });
 
   process.stderr.write(`Generating speech (voice=${voice}, speed=${speed})...\n`);
-  const audio = await tts.generate(args.text, { voice, speed });
 
-  audio.save(output);
+  // Use streaming to split text into sentences and generate audio for each.
+  // KokoroTTS.generate() silently truncates long text via tokenizer truncation,
+  // so we use tts.stream() + TextSplitterStream to handle arbitrary length text.
+  const splitter = new TextSplitterStream();
+  splitter.push(args.text);
+  splitter.close();
+
+  const chunks = [];
+  for await (const { audio } of tts.stream(splitter, { voice, speed })) {
+    chunks.push(audio.audio);
+  }
+
+  if (chunks.length === 0) {
+    process.stderr.write('Error: no audio generated\n');
+    process.exit(1);
+  }
+
+  // Concatenate all audio chunks into a single buffer
+  const totalLength = chunks.reduce((sum, c) => sum + c.length, 0);
+  const combined = new Float32Array(totalLength);
+  let offset = 0;
+  for (const chunk of chunks) {
+    combined.set(chunk, offset);
+    offset += chunk.length;
+  }
+
+  // Write WAV file manually (same as RawAudio.save but with concatenated data)
+  await writeWav(output, combined, 24000);
   process.stdout.write(`${output}\n`);
 }
 
