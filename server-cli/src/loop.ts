@@ -25,11 +25,13 @@ export async function runLoop(
     }
 
     console.log(`processing work ${work['workId']} (type: ${work['type']})`);
+    const startMs = Date.now();
     try {
       const { contentType, bytes } = await runner.run(work, timeoutMs);
       const contentBase64 = bytes.toString('base64');
       await api.complete(work['workId'] as string, contentType, contentBase64, false);
-      console.log(`completed work ${work['workId']}`);
+      const elapsed = ((Date.now() - startMs) / 1000).toFixed(1);
+      console.log(`completed work ${work['workId']} in ${elapsed}s`);
     } catch (err) {
       console.error(`work ${work['workId']} failed:`, err);
       const errJson = JSON.stringify({ type: 'error', message: String(err) });
