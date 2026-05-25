@@ -4,7 +4,7 @@
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "https://github.com/damiant/local-ai.git",
+    "url": "https://github.com/damiant/workar.git",
     "directory": "server-cli"
   },
   "bin": {
