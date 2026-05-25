@@ -6,8 +6,7 @@ A distributed work queue system for running local AI workloads (e.g. image gener
 |-----|--------|---------|
 | `client-cli` | `workar` | Submit work and retrieve results from any machine |
 | `server-cli` | `workar-server` | Run a worker process that polls and executes work |
-| `image-gen-cli` | `img` | Generate images locally via `stable-diffusion.cpp` |
-
+| `image-gen-cli` | `img` | Generate images locally via `stable-diffusion.cpp` || `tts-cli` | `tts` | Generate speech locally via Kokoro TTS (ONNX) |
 ---
 
 ## Prerequisites
@@ -76,11 +75,17 @@ workar submit --type <type> [key=value ...] [--wait] [--out-dir <dir>] [--server
 **Examples:**
 
 ```sh
-# Submit and get a workId back immediately
+# Submit image generation and get a workId back immediately
 workar submit --type image-gen prompt="a red fox" model=flux2-klein-4b
 
-# Submit and wait for the PNG to be saved to ./output/
+# Submit image generation and wait for the PNG to be saved to ./output/
 workar submit --type image-gen prompt="a red fox" model=flux2-klein-4b --wait --out-dir ./output
+
+# Submit TTS and wait for the WAV to be saved
+workar submit --type tts text="Hello, world!" --wait --out-dir ./output
+
+# TTS with a specific voice and speed
+workar submit --type tts text="Good morning." voice=bf_emma speed=1.2 --wait
 ```
 
 ### `workar get`
@@ -136,19 +141,61 @@ workar-server --api-key mykey --defs ./server-cli/work-defs.json --timeout-ms 12
 
 ### `work-defs.json`
 
-Defines the work types this worker can handle. Each entry maps a `type` string to one or more shell commands and an output file. `@token` placeholders are substituted from the job's payload.
+Defines the work types this worker can handle. Each entry maps a `type` string to one or more shell commands and an output file. `@token` placeholders are substituted from the job's payload. A `defaults` map provides fallback values for optional fields.
 
-```json
-[
-  {
-    "type": "image-gen",
-    "commands": [
-      "node ../image-gen-cli/src/cli.js -p @prompt -m @model -o @workId.png"
-    ],
-    "contentType": "image/png",
-    "outputFile": "@workId.png"
-  }
-]
+The bundled `work-defs.json` includes two built-in types:
+
+| Type | Output | Required fields | Optional fields |
+|------|--------|-----------------|-----------------|
+| `image-gen` | `image/png` | `prompt` | `model` (default: `sdxl-lightning`) |
+| `tts` | `audio/wav` | `text` | `voice` (default: `af_heart`), `speed` (default: `1`) |
+
+---
+
+## `tts` — Text-to-Speech CLI
+
+Generates speech locally using [Kokoro TTS](https://github.com/hexgrad/kokoro) (82M parameter ONNX model). On first run it downloads the model weights into `./.tts-cli/models/`. Long text is automatically sentence-split and the audio chunks are concatenated into one file.
+
+```sh
+tts -t "<text>" [options]
+```
+
+| Option | Short | Description | Default |
+|--------|-------|-------------|---------|
+| `--text <text>` | `-t` | **(required)** Text to speak | — |
+| `--output <file>` | `-o` | Output WAV path | `./tts-output.wav` |
+| `--voice <name>` | `-v` | Voice name (see below) | `af_heart` |
+| `--speed <n>` | `-s` | Speed factor | `1` |
+| `--dtype <type>` | `-d` | ONNX quantization: `fp32`\|`fp16`\|`q8`\|`q4`\|`q4f16` | `q8` |
+| `--model <id>` | | HuggingFace model ID override | `onnx-community/Kokoro-82M-v1.0-ONNX` |
+| `--help` | `-h` | Show help | — |
+
+### Voices
+
+| Group | Voices |
+|-------|--------|
+| American English (female) | `af_heart` *(default)*, `af_alloy`, `af_aoede`, `af_bella`, `af_jessica`, `af_kore`, `af_nicole`, `af_nova`, `af_river`, `af_sarah`, `af_sky` |
+| American English (male) | `am_adam`, `am_echo`, `am_eric`, `am_fenrir`, `am_liam`, `am_michael`, `am_onyx`, `am_puck`, `am_santa` |
+| British English (female) | `bf_alice`, `bf_emma`, `bf_isabella`, `bf_lily` |
+| British English (male) | `bm_daniel`, `bm_fable`, `bm_george`, `bm_lewis` |
+
+### Environment variables
+
+| Variable | Description |
+|----------|-------------|
+| `TTS_CLI_CACHE_DIR` | Cache directory for ONNX model weights (default: `./.tts-cli`) |
+
+**Examples:**
+
+```sh
+# Basic
+tts -t "Hello, world!"
+
+# British voice, 20% faster
+tts -t "Good morning." -v bf_emma -s 1.2 -o morning.wav
+
+# Higher quality (larger model, slower)
+tts -t "Clear audio" -d fp32
 ```
 
 ---
@@ -232,6 +279,6 @@ IMG_DIFFUSION_MODEL=/models/my-model.gguf img -p "a red fox"
 ```
 
 1. **Register & authenticate** once on the client machine.
-2. Start `workar-server` on a machine with a GPU.
-3. **Submit** work from anywhere — `workar submit --type image-gen prompt="..." --wait`.
-4. Results are saved to `--out-dir` automatically.
+2. Start `workar-server` on a machine with a GPU (or any machine for TTS).
+3. **Submit** work from anywhere — `workar submit --type image-gen prompt="..." --wait` or `workar submit --type tts text="..." --wait`.
+4. Results are saved to `--out-dir` automatically (`.png` for images, `.wav` for speech).

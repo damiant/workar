@@ -8,6 +8,9 @@ runtime.
 On first run it auto-downloads the ONNX model weights into `./.tts-cli/` in the
 current folder. Voice data is bundled with the npm package.
 
+Long text is handled automatically — input is split into sentences and the audio
+chunks are concatenated into a single output file.
+
 ## Requirements
 
 - Node.js ≥ 20
@@ -57,6 +60,9 @@ Output is written to `./tts-output.wav` by default (override with `-o`).
 # Basic
 node src/cli.js -t "The quick brown fox jumps over the lazy dog."
 
+# Long text (split into sentences automatically, concatenated into one WAV)
+node src/cli.js -t "First sentence. Second sentence. Third sentence." -o long.wav
+
 # British voice, faster
 node src/cli.js -t "Good morning." -v bf_emma -s 1.2
 
@@ -88,4 +94,32 @@ node src/cli.js -t "Clear audio" -d fp32
 
 ## Output
 
-24 kHz 16-bit PCM WAV file.
+24 kHz 32-bit IEEE float mono WAV file.
+
+## Integration with server-cli
+
+`tts-cli` is bundled inside [server-cli](../server-cli/) as a work type.
+The `server-cli/work-defs.json` entry is:
+
+```json
+{
+  "type": "tts",
+  "commands": [
+    "node __PKG_DIR__/tts-cli/src/cli.js -t @text -v @voice -s @speed -o @timestamp.wav"
+  ],
+  "contentType": "audio/wav",
+  "outputFile": "@timestamp.wav",
+  "defaults": {
+    "voice": "af_heart",
+    "speed": "1"
+  }
+}
+```
+
+Work payload fields:
+
+| Field | Required | Description |
+|---|---|---|
+| `text` | Yes | Text to synthesize |
+| `voice` | No | Voice name (default: `af_heart`) |
+| `speed` | No | Speed factor (default: `1`) |
