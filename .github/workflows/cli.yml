@@ -153,7 +153,5 @@ jobs:
         working-directory: client-cli
 
       - name: Publish workar-server
-        run: npm publish --access public
+        run: npm publish --provenance --access public
         working-directory: server-cli
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
