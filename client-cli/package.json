@@ -2,6 +2,11 @@
   "name": "workar",
   "version": "0.1.1",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/damiant/local-ai.git",
+    "directory": "client-cli"
+  },
   "bin": {
     "workar": "dist/cli.js"
   },

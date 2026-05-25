@@ -121,7 +121,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 22.14
           registry-url: https://registry.npmjs.org
 
       - name: Download client dist
@@ -149,9 +149,9 @@ jobs:
           npm version "${BASE}.${{ github.run_number }}" --no-git-tag-version
 
       - name: Publish workar (Trusted Publisher / provenance)
-        run: npm publish --provenance --access public
+        run: npm publish --access public
         working-directory: client-cli
 
       - name: Publish workar-server
-        run: npm publish --provenance --access public
+        run: npm publish --access public
         working-directory: server-cli
