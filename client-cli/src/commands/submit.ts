@@ -57,6 +57,10 @@ Not yet authenticated? Run: workar auth`);
     const outDir = args['out-dir'] ?? process.cwd();
     await mkdir(outDir, { recursive: true });
     const result = await api.getWork(true, workId);
+    if (result === null) {
+      console.log('No work result available.');
+      return;
+    }
     await saveResult(result, outDir);
     if (result.isError) process.exit(1);
   }
