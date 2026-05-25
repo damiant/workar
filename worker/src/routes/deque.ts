@@ -1,5 +1,5 @@
 import type { Client } from '@libsql/client';
-import { dequeWork, insertProcessed } from '../db.js';
+import { dequeWork, insertProcessed, deleteInputQueue } from '../db.js';
 import { jsonResponse } from '../response.js';
 
 export async function handleDeque(
@@ -28,6 +28,7 @@ export async function handleDeque(
         row.payload as string,
         now,
       );
+      await deleteInputQueue(db, row.work_id as string);
       const work = JSON.parse(row.payload as string) as Record<string, unknown>;
       return jsonResponse(work);
     }

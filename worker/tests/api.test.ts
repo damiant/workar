@@ -189,7 +189,7 @@ describe('Work flow', () => {
     }
   });
 
-  it('POST /api/work submits work and returns a 26-char workId', async () => {
+  it('POST /api/work submits work and returns a workId in yyyy-mm-dd-hh-mm-ss-rnd format', async () => {
     const res = await w('/api/work', {
       method: 'POST',
       headers: { 'content-type': 'application/json', 'x-api-key': userApiKey },
@@ -198,7 +198,7 @@ describe('Work flow', () => {
     expect(res.status).toBe(200);
     const data = await res.json() as { workId: string };
     expect(typeof data.workId).toBe('string');
-    expect(data.workId.length).toBe(26);
+    expect(data.workId).toMatch(/^\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}-\d{3}$/);
   });
 
   it('POST /api/work accepts a JWT Bearer token', async () => {

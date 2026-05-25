@@ -1,5 +1,4 @@
 const API_KEY_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-const ULID_ENCODING = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
 
 /** Generate a 255-character alphanumeric API key. */
 export function generateApiKey(): string {
@@ -8,16 +7,20 @@ export function generateApiKey(): string {
   return Array.from(bytes, (b) => API_KEY_CHARS[b % 62]).join('');
 }
 
-/** Generate a 26-character ULID-style work ID (timestamp + random). */
+/** Generate a work ID in format yyyy-mm-dd-hh-mm-ss-rnd (rnd = 3 random digits). */
 export function generateWorkId(): string {
-  let t = Date.now();
-  const timePart = new Array<string>(10);
-  for (let i = 9; i >= 0; i--) {
-    timePart[i] = ULID_ENCODING[t % 32];
-    t = Math.floor(t / 32);
-  }
-  const bytes = new Uint8Array(16);
-  crypto.getRandomValues(bytes);
-  const randPart = Array.from(bytes, (b) => ULID_ENCODING[b % 32]);
-  return (timePart.join('') + randPart.join('')).toLowerCase();
+  const now = new Date();
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const date = [
+    now.getFullYear(),
+    pad(now.getMonth() + 1),
+    pad(now.getDate()),
+  ].join('-');
+  const time = [
+    pad(now.getHours()),
+    pad(now.getMinutes()),
+    pad(now.getSeconds()),
+  ].join('-');
+  const rnd = String(Math.floor(Math.random() * 1000)).padStart(3, '0');
+  return `${date}-${time}-${rnd}`;
 }

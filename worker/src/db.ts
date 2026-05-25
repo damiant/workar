@@ -113,6 +113,11 @@ export async function insertProcessed(
   });
 }
 
+/** Delete a claimed row from the input queue. */
+export async function deleteInputQueue(db: Client, workId: string): Promise<void> {
+  await db.execute({ sql: 'DELETE FROM input_queue WHERE work_id = ?', args: [workId] });
+}
+
 export async function getProcessed(db: Client, workId: string) {
   const result = await db.execute({
     sql: 'SELECT username FROM processed WHERE work_id = ?',
