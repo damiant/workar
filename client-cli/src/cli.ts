@@ -3,8 +3,17 @@ import { parseArgs } from 'node:util';
 import { cmdAuth } from './commands/auth.js';
 import { cmdSubmit } from './commands/submit.js';
 import { cmdGet } from './commands/get.js';
+import { readConfig } from './config.js';
 
 const [subcommand, ...restArgs] = process.argv.slice(2);
+
+// Auto-authenticate if no saved credentials and not already running auth
+if (subcommand !== 'auth') {
+  const config = await readConfig();
+  if (!config.jwt && !config.apiKey) {
+    await cmdAuth({});
+  }
+}
 
 switch (subcommand) {
   case 'auth': {
@@ -87,8 +96,12 @@ switch (subcommand) {
   }
 
   default: {
-    console.error(`Unknown subcommand: ${subcommand ?? '(none)'}`);
-    console.error('Usage: workar <auth|submit|get> [options]');
-    process.exit(1);
+    if (subcommand) {
+      console.error(`Unknown subcommand: ${subcommand}`);
+      console.error('Usage: workar <auth|submit|get> [options]');
+      process.exit(1);
+    }
+    // No subcommand — auth already ran above if needed, nothing else to do
+    break;
   }
 }
