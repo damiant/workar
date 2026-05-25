@@ -1,0 +1,8 @@
+# Dependencies
+node_modules/
+
+# tts-cli cache (ONNX model weights, ~100MB)
+.tts-cli/
+
+# Generated audio
+*.wav

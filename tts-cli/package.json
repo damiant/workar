@@ -1,0 +1,22 @@
+{
+  "name": "tts-cli",
+  "version": "0.1.0",
+  "description": "Node CLI that generates speech from text via Kokoro TTS (kokoro-js / ONNX)",
+  "type": "module",
+  "bin": {
+    "tts": "./src/cli.js"
+  },
+  "files": [
+    "src/"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node src/cli.js"
+  },
+  "dependencies": {
+    "kokoro-js": "^1.2.0"
+  },
+  "license": "MIT"
+}

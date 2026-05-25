@@ -9,5 +9,17 @@
     "defaults": {
       "model": "sdxl-lightning"
     }
+  },
+  {
+    "type": "tts",
+    "commands": [
+      "node __PKG_DIR__/tts-cli/src/cli.js -t @text -v @voice -s @speed -o @timestamp.wav"
+    ],
+    "contentType": "audio/wav",
+    "outputFile": "@timestamp.wav",
+    "defaults": {
+      "voice": "af_heart",
+      "speed": "1"
+    }
   }
 ]

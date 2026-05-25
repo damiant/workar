@@ -13,16 +13,20 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/cli.js",
-    "prepack": "mkdir -p image-gen-cli && cp ../image-gen-cli/src/*.js image-gen-cli/"
+    "prepack": "mkdir -p image-gen-cli tts-cli/src && cp ../image-gen-cli/src/*.js image-gen-cli/ && cp ../tts-cli/src/*.js tts-cli/src/"
   },
   "files": [
     "dist/",
     "image-gen-cli/",
+    "tts-cli/",
     "work-defs.json",
     "README.md"
   ],
   "engines": {
     "node": ">=20"
+  },
+  "dependencies": {
+    "kokoro-js": "^1.2.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
