@@ -3,7 +3,7 @@
   "version": "0.1.1",
   "type": "module",
   "bin": {
-    "workar": "./dist/cli.js"
+    "workar": "dist/cli.js"
   },
   "scripts": {
     "build": "tsc",
