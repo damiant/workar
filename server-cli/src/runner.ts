@@ -21,6 +21,8 @@ export interface WorkDef {
   contentType: string;
   /** Path to the output file (may contain @tokens). If omitted, last command stdout is used. */
   outputFile?: string;
+  /** Default values applied for any @tokens absent from the work payload. */
+  defaults?: Record<string, string>;
 }
 
 /**
@@ -79,10 +81,12 @@ export class Runner {
     const def = this.defs.find((d) => d.type === work['type']);
     if (!def) throw new Error(`Unknown work type: ${work['type']}`);
 
+    const resolvedWork = { ...def.defaults, ...work };
+
     let lastStdout = '';
     for (const cmdStr of def.commands) {
       const rawArgv = tokenize(cmdStr);
-      const argv = substituteTokens(rawArgv, work);
+      const argv = substituteTokens(rawArgv, resolvedWork);
       // execFile + array args prevents shell injection from user-supplied values.
       const { stdout } = await execFile(argv[0], argv.slice(1), {
         timeout: timeoutMs,
@@ -92,7 +96,7 @@ export class Runner {
     }
 
     if (def.outputFile) {
-      const outputPath = substituteString(def.outputFile, work);
+      const outputPath = substituteString(def.outputFile, resolvedWork);
       if (!existsSync(outputPath)) {
         throw new Error(`Output file not found: ${outputPath}`);
       }

@@ -27,8 +27,10 @@ The JWT is used automatically for all subsequent commands.
 ### Submit work
 
 ```bash
-workar submit --type image-gen --wait [--out-dir ./output] -- prompt="a red panda" model=sdxl-lightning
+workar submit --type image-gen --wait [--out-dir ./output] -- prompt="a red panda" [model=sdxl-lightning]
 ```
+
+`model` defaults to `sdxl-lightning` and can be omitted.
 
 Key-value pairs after `--` are passed as work fields. `--wait` polls for the
 result and saves it as `work-<workId>.<ext>` in `--out-dir` (default: CWD).
