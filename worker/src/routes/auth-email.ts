@@ -37,7 +37,9 @@ async function sendOtpEmail(
   const res = await fetch(apiHost, {
     method: 'POST',
     headers: {
-      Authorization: `Zoho-enczapikey ${token}`,
+      Authorization: token.startsWith('Zoho-enczapikey ')
+        ? token
+        : `Zoho-enczapikey ${token}`,
       'Content-Type': 'application/json',
       Accept: 'application/json',
     },
