@@ -33,6 +33,7 @@ function stripAnsi(str) {
  * Parse the raw PTY capture and extract only the model's generated response.
  * The capture contains:
  *   > <user prompt echo>
+ *   [Start thinking]...[End thinking]   (optional, stripped)
  *   <model response lines>
  *   [ Prompt: X t/s | Generation: Y t/s ]
  *   Exiting...
@@ -52,8 +53,15 @@ function parseResponse(raw, prompt) {
       break;
     }
   }
-  if (start === -1) return raw.trim();
-  return lines.slice(start, end).join('\n').trim();
+  if (start === -1) return stripThinking(raw.trim());
+  return stripThinking(lines.slice(start, end).join('\n').trim());
+}
+
+/**
+ * Remove [Start thinking]...[End thinking] blocks from model output.
+ */
+function stripThinking(text) {
+  return text.replace(/\[Start thinking\][\s\S]*?\[End thinking\]\n?/g, '').trim();
 }
 
 /**
