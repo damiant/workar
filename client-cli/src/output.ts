@@ -5,6 +5,7 @@ const EXT_MAP: Record<string, string> = {
   'image/png': 'png',
   'image/jpeg': 'jpg',
   'image/webp': 'webp',
+  'audio/wav': 'wav',
   'application/json': 'json',
   'text/plain': 'txt',
 };
