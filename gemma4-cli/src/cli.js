@@ -119,8 +119,18 @@ async function main() {
     const { promisify } = await import('node:util');
     const execFileAsync = promisify(execFile);
 
+    // Set library path so shared libs next to the binary are found
+    const libEnv = { ...process.env };
+    const binDir = path.dirname(binary);
+    if (process.platform === 'darwin') {
+      libEnv.DYLD_LIBRARY_PATH = binDir + (libEnv.DYLD_LIBRARY_PATH ? `:${libEnv.DYLD_LIBRARY_PATH}` : '');
+    } else if (process.platform === 'linux') {
+      libEnv.LD_LIBRARY_PATH = binDir + (libEnv.LD_LIBRARY_PATH ? `:${libEnv.LD_LIBRARY_PATH}` : '');
+    }
+
     const { stdout } = await execFileAsync(binary, llamaArgs, {
       maxBuffer: 100 * 1024 * 1024,
+      env: libEnv,
     });
     const output = path.resolve(args.output);
     fs.writeFileSync(output, stdout);
