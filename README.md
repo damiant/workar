@@ -253,7 +253,7 @@ IMG_DIFFUSION_MODEL=/models/my-model.gguf img -p "a red fox"
 
 ```
 ┌──────────────────────┐          ┌──────────────────────┐          ┌──────────────────────┐
-│  Client machine      │          │  tarsk API           │          │  Worker machine      │
+│  Client machine      │          │  workar API          │          │  Worker machine      │
 │                      │          │  (Cloudflare Worker) │          │                      │
 │  workar auth         │─────────▶│                      │◀─────────│  workar-server       │
 │  workar submit       │─────────▶│  work queue          │─────────▶│  runs img / tts /    │
