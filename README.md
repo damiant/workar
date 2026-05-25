@@ -26,34 +26,20 @@ The `image-gen-cli` is pure JS and requires no build step.
 
 ## `workar` — Client CLI
 
-Used to register an account, authenticate, submit work jobs, and retrieve results.
-
-### `workar register`
-
-Create a new account. Saves credentials to `~/.workar/config.json`.
-
-```sh
-workar register --username <name> [--server <url>]
-```
-
-| Option | Description |
-|--------|-------------|
-| `--username` | **(required)** Username to register |
-| `--server` | Server URL (default: `https://workar.tarsk.io`) |
+Authenticate, submit work jobs, and retrieve results.
 
 ### `workar auth`
 
-Exchange credentials for a session JWT. Must be run after `register` (or when the JWT expires).
+Authenticate via email magic code. Sends a 6-digit code to the given address and saves a JWT to `~/.workar/config.json`. Run this once, or again when the session expires. Any command that requires auth will trigger it automatically if no credentials are saved.
 
 ```sh
-workar auth [--username <name>] [--api-key <key>] [--server <url>]
+workar auth [--email <address>] [--server <url>]
 ```
 
 | Option | Description |
 |--------|-------------|
-| `--username` | Username (defaults to saved value) |
-| `--api-key` | API key (defaults to saved value) |
-| `--server` | Server URL override |
+| `--email` | Email address (prompted interactively if omitted) |
+| `--server` | Server URL override (default: `https://workar.tarsk.io`) |
 
 ### `workar submit`
 
@@ -90,16 +76,16 @@ workar submit --type tts text="Good morning." voice=bf_emma speed=1.2 --wait
 
 ### `workar get`
 
-Retrieve (and optionally wait for) the result of a previously submitted job.
+Retrieve the result of a previously submitted job. Waits (long-polls) by default.
 
 ```sh
-workar get [--work-id <id>] [--wait] [--out-dir <dir>] [--server <url>] [--api-key <key>]
+workar get [--work-id <id>] [--out-dir <dir>] [--server <url>] [--api-key <key>]
 ```
 
 | Option | Description |
 |--------|-------------|
 | `--work-id` | ID of the job to fetch |
-| `--wait` | Long-poll until the job completes |
+| `--wait` | Long-poll until the job completes (default: `true`) |
 | `--out-dir` | Directory to save result files (default: current directory) |
 | `--server` | Server URL override |
 | `--api-key` | API key override |
@@ -107,12 +93,12 @@ workar get [--work-id <id>] [--wait] [--out-dir <dir>] [--server <url>] [--api-k
 **Example:**
 
 ```sh
-workar get --work-id abc123 --wait --out-dir ./output
+workar get --work-id abc123 --out-dir ./output
 ```
 
 ### Global authentication
 
-Credentials are read from `~/.workar/config.json` (written by `register`/`auth`). Any command that requires auth also accepts `--api-key` directly, bypassing stored credentials.
+Credentials are read from `~/.workar/config.json` (written by `workar auth`). Any command that requires auth will run `auth` automatically if no credentials are found. `--api-key` can also be passed directly to any command to bypass stored credentials.
 
 ---
 
@@ -271,14 +257,14 @@ IMG_DIFFUSION_MODEL=/models/my-model.gguf img -p "a red fox"
 ┌─────────────────────┐        ┌──────────────────┐        ┌─────────────────────┐
 │  Client machine     │        │  tarsk API server │        │  Worker machine     │
 │                     │        │  (Cloudflare      │        │                     │
-│  workar register    │──────▶│   Worker)         │◀──────│  workar-server      │
-│  workar auth        │        │                   │        │  (polls for work)   │
-│  workar submit      │──────▶│  work queue       │──────▶│  runs img / other   │
+│  workar auth        │──────▶│   Worker)         │◀──────│  workar-server      │
+│  workar submit      │──────▶│  work queue       │──────▶│  runs img / tts /   │
+│                     │        │                   │        │  other commands     │
 │  workar get --wait  │◀──────│  result store     │◀──────│  commands           │
 └─────────────────────┘        └──────────────────┘        └─────────────────────┘
 ```
 
-1. **Register & authenticate** once on the client machine.
+1. **Authenticate** once on the client machine (`workar auth` — prompted automatically on first use).
 2. Start `workar-server` on a machine with a GPU (or any machine for TTS).
 3. **Submit** work from anywhere — `workar submit --type image-gen prompt="..." --wait` or `workar submit --type tts text="..." --wait`.
 4. Results are saved to `--out-dir` automatically (`.png` for images, `.wav` for speech).
