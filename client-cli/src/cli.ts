@@ -5,7 +5,11 @@ import { cmdSubmit } from './commands/submit.js';
 import { cmdGet } from './commands/get.js';
 import { readConfig } from './config.js';
 
-const [subcommand, ...restArgs] = process.argv.slice(2);
+const SUBCOMMANDS = new Set(['auth', 'submit', 'get']);
+const firstArg = process.argv[2];
+const isKnownSubcommand = !!firstArg && SUBCOMMANDS.has(firstArg);
+const subcommand = isKnownSubcommand ? firstArg : undefined;
+const restArgs = isKnownSubcommand ? process.argv.slice(3) : process.argv.slice(2);
 
 // Auto-authenticate if no saved credentials and not already running auth
 if (subcommand !== 'auth') {
@@ -96,12 +100,46 @@ switch (subcommand) {
   }
 
   default: {
-    if (subcommand) {
-      console.error(`Unknown subcommand: ${subcommand}`);
-      console.error('Usage: workar <auth|submit|get> [options]');
-      process.exit(1);
+    // No recognized subcommand — treat all args as a submit command
+    const knownSubmitFlags = new Set(['type', 'wait', 'out-dir', 'server', 'api-key']);
+    const submitArgs: string[] = [];
+    const extraPositionals: string[] = [];
+    for (let i = 0; i < restArgs.length; i++) {
+      const arg = restArgs[i];
+      if (arg.startsWith('--')) {
+        const name = arg.slice(2).split('=')[0];
+        if (knownSubmitFlags.has(name)) {
+          submitArgs.push(arg);
+        } else if (arg.includes('=')) {
+          extraPositionals.push(arg.slice(2));
+        } else if (i + 1 < restArgs.length && !restArgs[i + 1].startsWith('--')) {
+          extraPositionals.push(`${name}=${restArgs[++i]}`);
+        }
+      } else {
+        submitArgs.push(arg);
+      }
     }
-    // No subcommand — auth already ran above if needed, nothing else to do
+    const { values, positionals } = parseArgs({
+      args: submitArgs,
+      options: {
+        type: { type: 'string' },
+        wait: { type: 'boolean', default: false },
+        'out-dir': { type: 'string' },
+        server: { type: 'string' },
+        'api-key': { type: 'string' },
+      },
+      allowPositionals: true,
+    });
+    await cmdSubmit({
+      ...(values as {
+        type?: string;
+        wait?: boolean;
+        'out-dir'?: string;
+        server?: string;
+        'api-key'?: string;
+      }),
+      positionals: [...positionals, ...extraPositionals],
+    });
     break;
   }
 }
