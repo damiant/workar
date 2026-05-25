@@ -2,7 +2,7 @@
   {
     "type": "image-gen",
     "commands": [
-      "node ../image-gen-cli/src/cli.js -p @prompt -m @model -o @workId.png"
+      "node __PKG_DIR__/image-gen-cli/cli.js -p @prompt -m @model -o @workId.png"
     ],
     "contentType": "image/png",
     "outputFile": "@workId.png",

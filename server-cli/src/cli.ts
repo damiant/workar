@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 import { parseArgs } from 'node:util';
 import { readFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
+import path from 'node:path';
 import { getConfig, readSavedConfig } from './config.js';
 import { ServerApi } from './api.js';
 import { Runner, type WorkDef } from './runner.js';
@@ -36,6 +38,8 @@ const { values } = parseArgs({
   allowPositionals: false,
 });
 
+const pkgDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
+
 const saved = await readSavedConfig();
 const config = getConfig(values as Record<string, string | undefined>, saved);
 
@@ -46,7 +50,21 @@ if (!config.apiKey && !config.jwt) {
   process.exit(0);
 }
 
-const workDefsRaw = await readFile(config.workDefsPath, 'utf-8');
+let workDefsRaw: string;
+try {
+  workDefsRaw = await readFile(config.workDefsPath, 'utf-8');
+} catch (err: any) {
+  if (err.code !== 'ENOENT') throw err;
+  if (config.workDefsPath !== './work-defs.json') {
+    console.error(`Error: work definitions file not found: ${config.workDefsPath}`);
+    console.error(`Specify a valid path with --defs <path>`);
+    process.exit(1);
+  }
+  // No local work-defs.json — fall back to the bundled default
+  workDefsRaw = await readFile(path.join(pkgDir, 'work-defs.json'), 'utf-8');
+}
+// Resolve __PKG_DIR__ placeholder used by the bundled work-defs.json
+workDefsRaw = workDefsRaw.replaceAll('__PKG_DIR__', pkgDir);
 const workDefs = JSON.parse(workDefsRaw) as WorkDef[];
 
 const api = new ServerApi(

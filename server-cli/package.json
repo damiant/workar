@@ -12,10 +12,12 @@
   },
   "scripts": {
     "build": "tsc",
-    "start": "node dist/cli.js"
+    "start": "node dist/cli.js",
+    "prepack": "mkdir -p image-gen-cli && cp ../image-gen-cli/src/*.js image-gen-cli/"
   },
   "files": [
     "dist/",
+    "image-gen-cli/",
     "work-defs.json",
     "README.md"
   ],

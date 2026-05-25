@@ -27,7 +27,7 @@ async function sendOtpEmail(
   apiUrl?: string,
 ): Promise<void> {
   const body = {
-    from: { address: fromEmail, name: 'Tarsk Work' },
+    from: { address: fromEmail, name: 'Workar' },
     to: [{ email_address: { address: toEmail, name: 'User' } }],
     subject: 'Workar Login Code',
     htmlbody: `<p>Your login code is: <strong style="font-size:1.5em;letter-spacing:0.1em">${code}</strong></p><p>This code expires in 15 minutes. Do not share it.</p>`,
