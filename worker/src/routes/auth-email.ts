@@ -24,6 +24,7 @@ async function sendOtpEmail(
   fromEmail: string,
   toEmail: string,
   code: string,
+  apiUrl?: string,
 ): Promise<void> {
   const body = {
     from: { address: fromEmail, name: 'Tarsk Work' },
@@ -32,7 +33,8 @@ async function sendOtpEmail(
     htmlbody: `<p>Your login code is: <strong style="font-size:1.5em;letter-spacing:0.1em">${code}</strong></p><p>This code expires in 15 minutes. Do not share it.</p>`,
   };
 
-  const res = await fetch('https://api.zeptomail.com/v1.1/email', {
+  const apiHost = apiUrl || 'https://api.zeptomail.com/v1.1/email';
+  const res = await fetch(apiHost, {
     method: 'POST',
     headers: {
       Authorization: `Zoho-enczapikey ${token}`,
@@ -44,12 +46,13 @@ async function sendOtpEmail(
 
   if (!res.ok) {
     const text = await res.text().catch(() => '');
-    let detail = text;
+    let detail = text.trim();
     try {
       const json = JSON.parse(text) as Record<string, unknown>;
       detail = JSON.stringify(json);
     } catch { /* keep raw text */ }
-    console.error(`ZeptoMail ${res.status} from=${fromEmail} to=${toEmail}: ${detail}`);
+    const region = res.headers.get('x-zcsrver') ?? res.headers.get('server') ?? 'unknown';
+    console.error(`ZeptoMail ${res.status} region=${region} from=${fromEmail} to=${toEmail}: ${detail}`);
     throw new Error(`ZeptoMail error ${res.status}: ${detail}`);
   }
 }
@@ -85,7 +88,7 @@ export async function handleAuthRequest(
     console.log(`[dev] OTP for ${email}: ${code}`);
   } else {
     const fromEmail = env.FROM_EMAIL || 'noreply@tarsk.io';
-    await sendOtpEmail(env.ZEPTOMAIL_TOKEN, fromEmail, email, code);
+    await sendOtpEmail(env.ZEPTOMAIL_TOKEN, fromEmail, email, code, env.ZEPTOMAIL_API_URL);
   }
 
   return jsonResponse({ ok: true });
