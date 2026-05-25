@@ -20,8 +20,27 @@ switch (subcommand) {
   }
 
   case 'submit': {
+    // Extract known options; convert any unknown --key [value] into key=value positionals
+    const knownSubmitFlags = new Set(['type', 'wait', 'out-dir', 'server', 'api-key']);
+    const submitArgs: string[] = [];
+    const extraPositionals: string[] = [];
+    for (let i = 0; i < restArgs.length; i++) {
+      const arg = restArgs[i];
+      if (arg.startsWith('--')) {
+        const name = arg.slice(2).split('=')[0];
+        if (knownSubmitFlags.has(name)) {
+          submitArgs.push(arg);
+        } else if (arg.includes('=')) {
+          extraPositionals.push(arg.slice(2)); // --key=value → key=value
+        } else if (i + 1 < restArgs.length && !restArgs[i + 1].startsWith('--')) {
+          extraPositionals.push(`${name}=${restArgs[++i]}`); // --key value → key=value
+        }
+      } else {
+        submitArgs.push(arg);
+      }
+    }
     const { values, positionals } = parseArgs({
-      args: restArgs,
+      args: submitArgs,
       options: {
         type: { type: 'string' },
         wait: { type: 'boolean', default: false },
@@ -39,7 +58,7 @@ switch (subcommand) {
         server?: string;
         'api-key'?: string;
       }),
-      positionals,
+      positionals: [...positionals, ...extraPositionals],
     });
     break;
   }
