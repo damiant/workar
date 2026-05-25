@@ -125,6 +125,7 @@ async function main() {
     dtype,
     device: 'cpu',
   });
+  process.stderr.write('✓ Loaded model.\n');
 
   process.stderr.write(`Generating speech (voice=${voice}, speed=${speed})...\n`);
 
@@ -156,6 +157,7 @@ async function main() {
 
   // Write WAV file manually (same as RawAudio.save but with concatenated data)
   await writeWav(output, combined, 24000);
+  process.stderr.write('✓ Generated speech.\n');
   process.stdout.write(`${output}\n`);
 }
 

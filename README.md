@@ -1,12 +1,14 @@
 # Workar
 
-A distributed work queue system for running local AI workloads (e.g. image generation) via a remote API. Consists of three CLIs:
+A distributed work queue system for running local AI workloads (e.g. image generation, text generation, speech synthesis) via a remote API. Consists of five CLIs:
 
 | CLI | Binary | Purpose |
 |-----|--------|---------|
 | `client-cli` | `workar` | Submit work and retrieve results from any machine |
 | `server-cli` | `workar-server` | Run a worker process that polls and executes work |
-| `image-gen-cli` | `img` | Generate images locally via `stable-diffusion.cpp` || `tts-cli` | `tts` | Generate speech locally via Kokoro TTS (ONNX) |
+| `image-gen-cli` | `img` | Generate images locally via `stable-diffusion.cpp` |
+| `tts-cli` | `tts` | Generate speech locally via Kokoro TTS (ONNX) |
+| `gemma4-cli` | `gemma` | Generate text locally via Gemma 4 E4B (llama.cpp) |
 ---
 
 ## Prerequisites
@@ -20,7 +22,7 @@ cd client-cli && npm install && npm run build
 cd ../server-cli && npm install && npm run build
 ```
 
-The `image-gen-cli` is pure JS and requires no build step.
+The `image-gen-cli` and `gemma4-cli` are pure JS and require no build step.
 
 ---
 
@@ -71,6 +73,12 @@ workar submit --type tts text="Hello, world!" --out-dir ./output
 
 # TTS with a specific voice and speed
 workar submit --type tts text="Good morning." voice=bf_emma speed=1.2
+
+# Submit text generation and save the result
+workar submit --type text-gen prompt="Explain quantum computing briefly." --out-dir ./output
+
+# Text generation with a custom system prompt
+workar submit --type text-gen prompt="Write a haiku about code." system="You are a poet."
 ```
 
 ### `workar get`
@@ -127,12 +135,13 @@ workar-server --api-key mykey --defs ./server-cli/work-defs.json --timeout-ms 12
 
 Defines the work types this worker can handle. Each entry maps a `type` string to one or more shell commands and an output file. `@token` placeholders are substituted from the job's payload. A `defaults` map provides fallback values for optional fields.
 
-The bundled `work-defs.json` includes two built-in types:
+The bundled `work-defs.json` includes three built-in types:
 
 | Type | Output | Required fields | Optional fields |
 |------|--------|-----------------|-----------------|
 | `image-gen` | `image/png` | `prompt` | `model` (default: `sdxl-lightning`) |
 | `tts` | `audio/wav` | `text` | `voice` (default: `af_heart`), `speed` (default: `1`) |
+| `text-gen` | `text/plain` | `prompt` | `model` (default: `gemma-4-e4b-it`), `system` (default: `"You are a helpful assistant."`) |
 
 ---
 
@@ -249,6 +258,65 @@ IMG_DIFFUSION_MODEL=/models/my-model.gguf img -p "a red fox"
 
 ---
 
+## `gemma` — Text Generation CLI
+
+Generates text locally using [Gemma 4 E4B](https://ai.google.dev/gemma) via [llama.cpp](https://github.com/ggml-org/llama.cpp). On first run it automatically downloads the `llama-cli` binary and the GGUF model weights (~5.34 GB for Q4_K_M).
+
+```sh
+gemma -p "<prompt>" [options]
+```
+
+| Option | Short | Description | Default |
+|--------|-------|-------------|---------|
+| `--prompt <text>` | `-p` | **(required)** Text prompt | — |
+| `--model <name>` | `-m` | Model preset (see below) | `gemma-4-e4b-it` |
+| `--output <file>` | `-o` | Save response to file | stdout only |
+| `--system <text>` | `-s` | System prompt | `"You are a helpful assistant."` |
+| `--temp <n>` | | Sampling temperature | `0.6` |
+| `--top-k <n>` | | Top-K sampling | `40` |
+| `--top-p <n>` | | Top-P sampling | `0.95` |
+| `--seed <n>` | | RNG seed | random |
+| `--threads <n>` | | Number of threads | auto |
+| `--ctx-size <n>` | | Context size in tokens | `4096` |
+| `--model-file <path>` | | Override GGUF model path | — |
+| `--download` | | Download binary + model without running | — |
+| `--help` | `-h` | Show help | — |
+
+### Model presets
+
+| Name | Label | Size |
+|------|-------|------|
+| `gemma-4-e4b-it` | Gemma 4 E4B IT (Q4_K_M) | ~5.34 GB |
+| `gemma-4-e4b-it-q8` | Gemma 4 E4B IT (Q8_0) | ~8.03 GB |
+
+### Environment variables
+
+| Variable | Description |
+|----------|-------------|
+| `LLAMA_BINARY` | Path to `llama-cli` executable (skips auto-download) |
+| `GEMMA4_CLI_CACHE_DIR` | Cache directory for models and binaries (default: `./.gemma4-cli`) |
+| `GEMMA4_MODEL` | Override GGUF model path |
+| `HF_TOKEN` | HuggingFace token for gated model downloads |
+| `GITHUB_TOKEN` | GitHub token for rate-limited releases API |
+
+**Examples:**
+
+```sh
+# Basic prompt (downloads binary + model on first run)
+gemma -p "Explain quantum computing in one paragraph."
+
+# With system prompt and higher temperature
+gemma -p "Write a haiku about programming." -s "You are a poet." --temp 0.8
+
+# Save output to file
+gemma -p "What is 2+2?" -o answer.txt
+
+# Pre-download binary + model without running inference
+gemma --download
+```
+
+---
+
 ## End-to-end workflow
 
 ```
@@ -257,11 +325,11 @@ IMG_DIFFUSION_MODEL=/models/my-model.gguf img -p "a red fox"
 │                      │          │  (Cloudflare Worker) │          │                      │
 │  workar auth         │─────────▶│                      │◀─────────│  workar-server       │
 │  workar submit       │─────────▶│  work queue          │─────────▶│  runs img / tts /    │
-│  workar get          │◀─────────│  result store        │◀─────────│  other commands      │
+│  workar get          │◀─────────│  result store        │◀─────────│  gemma / other cmds  │
 └──────────────────────┘          └──────────────────────┘          └──────────────────────┘
 ```
 
 1. **Authenticate** once on the client machine (`workar auth` — prompted automatically on first use).
-2. Start `workar-server` on a machine with a GPU (or any machine for TTS).
-3. **Submit** work from anywhere — `workar submit --type image-gen prompt="..."` or `workar submit --type tts text="..."`.
-4. Results are saved to `--out-dir` automatically (`.png` for images, `.wav` for speech).
+2. Start `workar-server` on a machine with a GPU (or any machine for TTS / text generation).
+3. **Submit** work from anywhere — `workar submit --type image-gen prompt="..."`, `workar submit --type tts text="..."`, or `workar submit --type text-gen prompt="..."`.
+4. Results are saved to `--out-dir` automatically (`.png` for images, `.wav` for speech, `.txt` for text).

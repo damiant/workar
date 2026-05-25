@@ -1,0 +1,19 @@
+{
+  "name": "gemma4-cli",
+  "version": "0.1.0",
+  "description": "Node CLI that runs text prompts through Gemma 4 E4B locally via llama.cpp",
+  "type": "module",
+  "bin": {
+    "gemma": "./src/cli.js"
+  },
+  "files": [
+    "src/"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node src/cli.js"
+  },
+  "license": "MIT"
+}

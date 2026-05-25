@@ -13,12 +13,13 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/cli.js",
-    "prepack": "mkdir -p image-gen-cli tts-cli/src && cp ../image-gen-cli/src/*.js image-gen-cli/ && cp ../tts-cli/src/*.js tts-cli/src/"
+    "prepack": "mkdir -p image-gen-cli tts-cli/src gemma4-cli && cp ../image-gen-cli/src/*.js image-gen-cli/ && cp ../tts-cli/src/*.js tts-cli/src/ && cp ../gemma4-cli/src/*.js gemma4-cli/"
   },
   "files": [
     "dist/",
     "image-gen-cli/",
     "tts-cli/",
+    "gemma4-cli/",
     "work-defs.json",
     "README.md"
   ],

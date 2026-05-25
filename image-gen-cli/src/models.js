@@ -90,8 +90,9 @@ async function resolveComponent(componentName, override, spec) {
   ensureDirs();
   const dest = path.join(MODELS_DIR, spec.file);
   if (!fs.existsSync(dest)) {
-    process.stderr.write(`Downloading ${componentName} (${spec.file})\n`);
+    process.stderr.write(`Downloading model (${spec.file})...\n`);
     await download(spec.url, dest, { label: spec.file });
+    process.stderr.write(`✓ Downloaded model (${spec.file}).\n`);
   }
   return dest;
 }

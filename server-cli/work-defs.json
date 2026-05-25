@@ -21,5 +21,17 @@
       "voice": "af_heart",
       "speed": "1"
     }
+  },
+  {
+    "type": "text-gen",
+    "commands": [
+      "node __PKG_DIR__/gemma4-cli/cli.js -p @prompt -m @model -s @system -o @timestamp.txt"
+    ],
+    "contentType": "text/plain",
+    "outputFile": "@timestamp.txt",
+    "defaults": {
+      "model": "gemma-4-e4b-it",
+      "system": "You are a helpful assistant."
+    }
   }
 ]

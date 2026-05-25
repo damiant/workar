@@ -1,19 +1,16 @@
 /**
  * runner.ts — looks up work-def by type, tokenizes commands, and runs them.
  *
- * Security note: execFile() is called with an argv array, never via a shell
+ * Security note: spawn() is called with an argv array, never via a shell
  * string. User-supplied data (prompt, model, etc.) is substituted as discrete
  * argv elements after tokenization, so injection characters in a prompt value
  * cannot influence the shell command structure.
  */
 
-import { execFile as execFileCb } from 'node:child_process';
-import { promisify } from 'node:util';
+import { spawn } from 'node:child_process';
 import { readFile, unlink } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
-
-const execFile = promisify(execFileCb);
 
 export interface WorkDef {
   type: string;
@@ -72,6 +69,46 @@ function substituteString(template: string, work: Record<string, unknown>): stri
   });
 }
 
+/**
+ * Run a command, capturing stdout while streaming stderr to the parent process.
+ * This ensures CLI progress logs (downloads, model loading, etc.) are visible
+ * in the server's output.
+ */
+function runCommand(
+  command: string,
+  args: string[],
+  options: { timeout: number; maxBuffer: number },
+): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const child = spawn(command, args, {
+      timeout: options.timeout,
+      stdio: ['pipe', 'pipe', 'inherit'], // inherit stderr so CLI logs pass through
+    });
+
+    const chunks: Buffer[] = [];
+    let byteLength = 0;
+
+    child.stdout.on('data', (chunk: Buffer) => {
+      byteLength += chunk.length;
+      if (byteLength > options.maxBuffer) {
+        child.kill();
+        reject(new Error(`stdout exceeded maxBuffer of ${options.maxBuffer} bytes`));
+        return;
+      }
+      chunks.push(chunk);
+    });
+
+    child.on('error', reject);
+    child.on('close', (code) => {
+      if (code === 0 || code === null) {
+        resolve(Buffer.concat(chunks).toString('utf8'));
+      } else {
+        reject(new Error(`Command "${command}" exited with code ${code}`));
+      }
+    });
+  });
+}
+
 export class Runner {
   constructor(private readonly defs: WorkDef[]) {}
 
@@ -95,12 +132,12 @@ export class Runner {
     for (const cmdStr of def.commands) {
       const rawArgv = tokenize(cmdStr);
       const argv = substituteTokens(rawArgv, resolvedWork);
-      // execFile + array args prevents shell injection from user-supplied values.
-      const { stdout } = await execFile(argv[0], argv.slice(1), {
+      // spawn + array args prevents shell injection from user-supplied values.
+      // stderr is inherited so CLI progress logs (downloads, model loading) are visible.
+      lastStdout = await runCommand(argv[0], argv.slice(1), {
         timeout: timeoutMs,
         maxBuffer: 100 * 1024 * 1024, // 100 MB
       });
-      lastStdout = stdout;
     }
 
     if (def.outputFile) {
