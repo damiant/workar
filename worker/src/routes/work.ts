@@ -19,6 +19,12 @@ export async function handleSubmitWork(
     return jsonResponse({ error: 'type is required' }, 400);
   }
 
+  if (body.type === 'image-gen') {
+    if (!body.prompt || typeof body.prompt !== 'string' || body.prompt.trim() === '') {
+      return jsonResponse({ error: 'prompt is required for image-gen' }, 400);
+    }
+  }
+
   const workId = generateWorkId();
   const payload = JSON.stringify({ ...body, workId });
   await insertWorkItem(db, workId, username, payload);
