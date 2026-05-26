@@ -13,12 +13,14 @@ A distributed work queue system for running local AI workloads (e.g. image gener
 
 ## Install skills
 
+Be sure to run `npx workar` and register the same user that is running `npx workar-server` on a local machine suitable to running AI workloads.
+
 ### Image Generation
 
 Generate images from a text prompt using the workar CLI.
 
 ```sh
-npx skills damiant/workar --skill image-gen
+npx skills add damiant/workar --skill image-gen
 ```
 
 ### Text to Speech
@@ -26,7 +28,7 @@ npx skills damiant/workar --skill image-gen
 Generate speech audio from text using the workar CLI.
 
 ```sh
-npx skills damiant/workar --skill tts
+npx skills add damiant/workar --skill tts
 ```
 
 ### Gemma 4 Text Generation
@@ -34,7 +36,7 @@ npx skills damiant/workar --skill tts
 Generate text using an AI model (Gemma 4) via the workar CLI.
 
 ```sh
-npx skills damiant/workar --skill text-gen
+npx skills add damiant/workar --skill text-gen
 ```
 
 ---
