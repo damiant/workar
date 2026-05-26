@@ -11,6 +11,34 @@ A distributed work queue system for running local AI workloads (e.g. image gener
 | `gemma4-cli` | `gemma` | Generate text locally via Gemma 4 E4B (llama.cpp) |
 ---
 
+## Install skills
+
+### Image Generation
+
+Generate images from a text prompt using the workar CLI.
+
+```sh
+npx skill damiant/workar --skill image-gen
+```
+
+### Text to Speech
+
+Generate speech audio from text using the workar CLI.
+
+```sh
+npx skill damiant/workar --skill tts
+```
+
+### Gemma 4 Text Generation
+
+Generate text using an AI model (Gemma 4) via the workar CLI.
+
+```sh
+npx skill damiant/workar --skill text-gen
+```
+
+---
+
 ## Prerequisites
 
 - Node.js ≥ 20
