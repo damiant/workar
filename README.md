@@ -18,7 +18,7 @@ A distributed work queue system for running local AI workloads (e.g. image gener
 Generate images from a text prompt using the workar CLI.
 
 ```sh
-npx skill damiant/workar --skill image-gen
+npx skills damiant/workar --skill image-gen
 ```
 
 ### Text to Speech
@@ -26,7 +26,7 @@ npx skill damiant/workar --skill image-gen
 Generate speech audio from text using the workar CLI.
 
 ```sh
-npx skill damiant/workar --skill tts
+npx skills damiant/workar --skill tts
 ```
 
 ### Gemma 4 Text Generation
@@ -34,7 +34,7 @@ npx skill damiant/workar --skill tts
 Generate text using an AI model (Gemma 4) via the workar CLI.
 
 ```sh
-npx skill damiant/workar --skill text-gen
+npx skills damiant/workar --skill text-gen
 ```
 
 ---
